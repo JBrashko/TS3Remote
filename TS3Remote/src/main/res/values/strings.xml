@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name" >TS3 Remote
+    </string>
+    <string name="action_settings" >Settings
+    </string>
+    <string name="hello_world" >Hello world!
+    </string>
+    <string name="connect_ip" >Enter a ip address to connect to
+    </string>
+    <string name="button_connect">Connect</string>
+    <string name="button_send" >Send</string>
+    <string name="title_activity_main">MainActivity</string>
+    <string name="title_activity_display_message">My Message</string>
+    <string name="button_connect_server_test">Connect to test server</string>
+    <string name="checkBox_use_manager">Use remote manager</string>
+    <string name="button_server_chat">Server chat</string>
+    <string name="button_channel_chat">Channel chat</string>
+    <string name="default_chat">No chat loaded</string>
+</resources>

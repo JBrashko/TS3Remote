@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout
+    android:orientation="vertical"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <ScrollView
+            android:layout_width="wrap_content"
+            android:layout_height="607dp"
+            android:id="@+id/scrollView3"
+            android:measureAllChildren="false">
+        <meliarion.ts3.ts3remote.TSServerView
+                android:layout_height="fill_parent"
+                android:layout_width="fill_parent"
+                android:id="@+id/serverView" />
+            </ScrollView>
+
+    <LinearLayout
+        android:layout_width="fill_parent"
+        android:layout_height="47dp">
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/button_server_chat"
+            android:id="@+id/showServerChat" />
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="fill_parent"
+            android:text="@string/button_channel_chat"
+            android:id="@+id/showChannelChat" />
+    </LinearLayout>
+
+    <ScrollView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/scrollView" >
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/default_chat"
+            android:id="@+id/ChatTextView" />
+    </ScrollView>
+
+    <LinearLayout
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content">
+
+        <EditText
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:id="@+id/commands"
+                android:layout_weight="1.61"/>
+
+        <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/button_send"
+                android:id="@+id/button"
+                android:onClick="SendMessage"/>
+
+    </LinearLayout>
+
+</LinearLayout>
