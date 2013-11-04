@@ -6,7 +6,7 @@ import android.os.Handler;
  * Created by Meliarion on 06/07/13.
  * Interface that abstracts away the display server activity
  */
-public interface NetworkInterface {
+public interface RemoteUserInterface {
 
     public void Received(String data);
 

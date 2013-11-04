@@ -19,7 +19,7 @@ import android.widget.EditText;
  * Created by Meliarion on 05/06/13.
  * Activity which handles the UI for the teamspeak remote
  */
-public class DisplayServerActivity extends Activity  implements NetworkInterface{
+public class DisplayServerActivity extends Activity  implements RemoteUserInterface {
     private TS3ClientConnection currentClient;
     private Thread networkThread;
     private int rec = 0;

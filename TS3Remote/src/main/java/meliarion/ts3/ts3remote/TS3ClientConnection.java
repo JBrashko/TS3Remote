@@ -34,7 +34,7 @@ public class TS3ClientConnection implements Runnable{
     private Writer osw;
     private boolean useNetwork;
     private String TSClientIP;
-    private NetworkInterface UI;
+    private RemoteUserInterface UI;
     private Handler mHandler;
     private KeepAlive KeepAlive;
     public int DisplayedSCHandler=-1;
@@ -45,7 +45,7 @@ public class TS3ClientConnection implements Runnable{
     private List<ServerConnection> SCHandlers = new ArrayList<ServerConnection>();
 
 
-    public TS3ClientConnection(String _ip, NetworkInterface _ui, boolean _remote)
+    public TS3ClientConnection(String _ip, RemoteUserInterface _ui, boolean _remote)
     {
       this.TSClientIP = _ip;
       this.UI = _ui;
