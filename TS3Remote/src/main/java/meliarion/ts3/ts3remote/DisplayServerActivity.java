@@ -20,7 +20,7 @@ import android.widget.EditText;
  * Activity which handles the UI for the teamspeak remote
  */
 public class DisplayServerActivity extends Activity  implements RemoteUserInterface {
-    private TS3ClientConnection currentClient;
+    private RemoteNetworkInterface networkInterface;
     private Thread networkThread;
     private int rec = 0;
     private Handler mHandler = new Handler(Looper.getMainLooper()){
@@ -70,7 +70,7 @@ public class DisplayServerActivity extends Activity  implements RemoteUserInterf
                 Log.d("MessageHandler","Message of type "+origin+" received : "+text);
 
                 if(msg.arg1!=-1){
-                    ServerConnection used = currentClient.getSchandler(msg.arg1);
+                    ServerConnection used = networkInterface.getSCHandler(msg.arg1);
 
                     if(serverView.getSCHandlerid()!=used.getID()){
                     serverView.setHandler(used);
@@ -137,10 +137,11 @@ public class DisplayServerActivity extends Activity  implements RemoteUserInterf
         NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
         if (networkInfo != null && networkInfo.isConnected())
         { try{
-            currentClient = new TS3ClientConnection(client_ip, this,remote);
-            networkThread = new Thread(currentClient);
+            TS3ClientConnection connection = new TS3ClientConnection(client_ip, this,remote);
+            networkThread = new Thread(connection);
             networkThread.setName("Network Thread");
             networkThread.start();
+            networkInterface = connection;
             }
             catch (Exception e)
             {
@@ -200,7 +201,7 @@ public class DisplayServerActivity extends Activity  implements RemoteUserInterf
         try{
         EditText editText = (EditText) findViewById(R.id.commands);
         String message = editText.getText().toString();
-        currentClient.SendMessage(message);
+        networkInterface.SendCQMessage(message);
         }
         catch (Exception ex)
         {
@@ -208,7 +209,7 @@ public class DisplayServerActivity extends Activity  implements RemoteUserInterf
         }
    }
     private void ShowChatMessage(Message msg)throws Exception{
-    /*ServerConnection sc = currentClient.getSchandler((msg.arg1));
+    /*ServerConnection sc = currentClient.getSCHandler((msg.arg1));
     TextView serverChat = (TextView) findViewById(R.id.serverChatView);
     serverChat.setText(sc.getServerChat());
     TextView channelChat = (TextView) findViewById(R.id.channelChatView);

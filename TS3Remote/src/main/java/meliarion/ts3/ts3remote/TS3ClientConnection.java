@@ -25,7 +25,7 @@ import java.util.regex.Pattern;
  * Created by Meliarion on 01/07/13.
  * Class handling the connection to the teamspeak client
  */
-public class TS3ClientConnection implements Runnable{
+public class TS3ClientConnection implements Runnable, RemoteNetworkInterface {
 
     private Socket requestSocket;
     private boolean remote;
@@ -58,13 +58,13 @@ public class TS3ClientConnection implements Runnable{
         return useNetwork;
     }
 
-    public ServerConnection getSchandler(int scid)throws TSRemoteException{
+    public ServerConnection getSCHandler(int scid)throws TSRemoteException{
         for (ServerConnection serverConnection : SCHandlers) {
             if (serverConnection.getID() == scid) {
                 return serverConnection;
             }
         }
-        throw new TSRemoteException("schandler id:"+scid+" not found");
+        throw new TSRemoteException("SCHandler id:"+scid+" not found");
     }
 
 
@@ -101,8 +101,11 @@ public class TS3ClientConnection implements Runnable{
         Log.i("Connect", "Initialisation done");
         }
     }
-
-    public void SendMessage(String message){
+    public void SendCQMessage(String message)
+    {
+        SendMessage(message);
+    }
+    private void SendMessage(String message){
         try{
         Log.i("CQMessage","sending message: "+message);
         sentCommand = message;
@@ -218,9 +221,9 @@ public class TS3ClientConnection implements Runnable{
                                 Matcher nMatch = notify.matcher(receivedLine);
                                 if (nMatch.find()&&(DisplayedSCHandler>=0)){
                                     String type = nMatch.group(1);
-                                    int schandler = Integer.valueOf(nMatch.group(2));
+                                    int SCHandler = Integer.valueOf(nMatch.group(2));
                                     String params = nMatch.group(3);
-                                    notifyResponce(type,schandler,params);
+                                    notifyResponce(type,SCHandler,params);
                                     this.returnStringBuffer.delete(0,this.returnStringBuffer.length());
                                     continue;
                                 }
@@ -498,7 +501,7 @@ public class TS3ClientConnection implements Runnable{
          }
          Log.d("Notify","Notify message of "+type+" received");
          try {
-         ServerConnection server = getSchandler(scid);
+         ServerConnection server = getSCHandler(scid);
          handleNotify(type,server,params);
          }
          catch (ServerConnection.SCException ex){
@@ -527,7 +530,7 @@ public class TS3ClientConnection implements Runnable{
     private void handleNotify(String type, ServerConnection server, Map<String, String> params)throws Exception{
         if (type.equals("selected"))
         {
-            UsedSCHandlerIndex = SCHandlers.indexOf(getSchandler(server.getID()));
+            UsedSCHandlerIndex = SCHandlers.indexOf(getSCHandler(server.getID()));
 
         }
         else if (type.equals("notifytalkstatuschange")){
@@ -876,7 +879,7 @@ public class TS3ClientConnection implements Runnable{
         }
         else
         {   Log.w("Notify","Unhandled notify type:"+type);
-            UI.Received("received  "+type+" from schandler="+server.getID());
+            UI.Received("received  "+type+" from SCHandler="+server.getID());
         }
     }
 }

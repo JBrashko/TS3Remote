@@ -50,7 +50,7 @@ class KeepAlive implements Runnable {
         }
         try{
         Log.i("KeepAlive", "sending message: " + message+" to keep connection alive");
-        parent.SendMessage(message);
+        parent.SendCQMessage(message);
         }
         catch (Exception ex)
         {
