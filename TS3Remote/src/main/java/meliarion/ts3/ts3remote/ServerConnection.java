@@ -75,9 +75,6 @@ public class ServerConnection {
         this.ChannelList.add(new TSChannel(0,-1,"Server top level",TSChannel.ChannelType.ServerTopLevel));
         this.ChannelMap.put(0,0);
     }
-    public void advanceConnectionStage(){
-
-    }
    /* public void advanceConnectionStage(){
         switch (stage){
             case VerifyConnection:
