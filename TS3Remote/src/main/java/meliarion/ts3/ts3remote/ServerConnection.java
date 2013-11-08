@@ -43,7 +43,6 @@ public class ServerConnection {
 
     ServerConnection(int _id){
         this.id = _id;
-        //stage=ConnectionStage.VerifyConnection;
         initialiseChannels();
     }
     /*public void setConnectionStage(String _stage){
