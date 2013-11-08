@@ -70,7 +70,6 @@ public class ServerConnection {
         {
         this.Disconnect();
         }
-
     }*/
     private void initialiseChannels(){
         this.ChannelList.add(new TSChannel(0,-1,"Server top level",TSChannel.ChannelType.ServerTopLevel));
