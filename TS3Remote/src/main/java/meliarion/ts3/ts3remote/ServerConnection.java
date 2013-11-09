@@ -177,7 +177,6 @@ public class ServerConnection {
     }
 
     public void Disconnect(){
-        //this.stage = ConnectionStage.Disconnected;
         ChannelsReceived = false;
         ConnectionVerified =false;
         ClientsReceived = false;
