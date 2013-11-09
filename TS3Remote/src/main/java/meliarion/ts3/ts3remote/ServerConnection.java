@@ -171,7 +171,6 @@ public class ServerConnection {
     public boolean isConnected(){
         ConnectionStage stage = getStage();
         return stage==ConnectionStage.SetupDone;
-        //return ChannelsReceived&&ConnectionVerified&&ClientsReceived&&ServerGroupsreceived &&ChannelGroupsreceived ;
     }
     public boolean Connecting(){
         return getStage()!=ConnectionStage.Disconnected;
