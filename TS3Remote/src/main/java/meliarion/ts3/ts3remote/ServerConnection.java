@@ -229,7 +229,6 @@ public class ServerConnection {
             AddServerMessage(message,sender,senderUID);
             break;
         }
-
     }
 
     private void AddPrivateMessage(String message, String sender, String senderUID) {
