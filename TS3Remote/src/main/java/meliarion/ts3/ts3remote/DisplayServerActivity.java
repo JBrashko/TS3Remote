@@ -20,7 +20,7 @@ import android.widget.EditText;
  * Activity which handles the UI for the teamspeak remote
  */
 public class DisplayServerActivity extends Activity  implements RemoteUserInterface {
-    private RemoteNetworkInterface networkInterface;
+    private ClientConnectionInterface networkInterface;
     private Thread networkThread;
     private int rec = 0;
     private Handler mHandler = new Handler(Looper.getMainLooper()){

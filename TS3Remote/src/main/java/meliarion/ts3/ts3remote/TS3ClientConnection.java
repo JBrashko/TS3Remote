@@ -9,7 +9,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
-import java.net.Socket;
 import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -25,9 +24,10 @@ import java.util.regex.Pattern;
  * Created by Meliarion on 01/07/13.
  * Class handling the connection to the teamspeak client
  */
-public class TS3ClientConnection implements Runnable, RemoteNetworkInterface {
+public class TS3ClientConnection implements Runnable, ClientConnectionInterface {
 
-    private Socket requestSocket;
+   // private Socket requestSocket;
+    private NetworkInterface networkInterface;
     private boolean remote;
     private StringBuilder returnStringBuffer = new StringBuilder();
     private InputStreamReader isr;
@@ -73,23 +73,14 @@ public class TS3ClientConnection implements Runnable, RemoteNetworkInterface {
     {
         NetworkConnect();
     }
-    }
-    private void NetworkConnect() throws IOException{
-        if (this.requestSocket==null){
-        Log.i("Connect","Making Socket");
-        if(remote)
-        {
-        this.requestSocket = new Socket(this.TSClientIP, 25740);
-        }
         else
-        {
-        this.requestSocket = new Socket(this.TSClientIP, 25639);
-        }
-        this.requestSocket.setTcpNoDelay(true);
+    {
+        throw new IOException();
+    }
         Log.i("Connect", "Making ISR");
-        this.isr = new InputStreamReader(this.requestSocket.getInputStream());
+        this.isr = new InputStreamReader(this.networkInterface.getInputStream());
         Log.i("Connect","Making OSR");
-        this.osw = new BufferedWriter(new OutputStreamWriter(this.requestSocket.getOutputStream()));
+        this.osw = new BufferedWriter(new OutputStreamWriter(this.networkInterface.getOutputStream()));
         long keepAliveTime = 5*60*1000;
         Log.i("Connect","Making KeepAlive");
         KeepAlive =    new KeepAlive(this,keepAliveTime);
@@ -99,6 +90,19 @@ public class TS3ClientConnection implements Runnable, RemoteNetworkInterface {
         keepAliveThread.start();
         KeepAlive.addSleepTime();
         Log.i("Connect", "Initialisation done");
+    }
+    private void NetworkConnect() throws IOException{
+        if (this.networkInterface==null){
+        Log.i("Connect","Making Socket");
+        if(remote)
+        {
+        this.networkInterface = new SocketNetworkInterface(this.TSClientIP, 25740);
+        }
+        else
+        {
+        this.networkInterface = new SocketNetworkInterface(this.TSClientIP, 25639);
+        }
+
         }
     }
     public void SendCQMessage(String message)
@@ -150,8 +154,8 @@ public class TS3ClientConnection implements Runnable, RemoteNetworkInterface {
     }
 
     private void Read() throws Exception{
-        if (this.requestSocket.isConnected()){
-            UI.Received("connected to the server " + this.requestSocket.getInetAddress().toString() + ":" + this.requestSocket.getPort() + "\n");
+        if (this.networkInterface.isConnected()){
+            UI.Received("connected to the server " + this.networkInterface.getConnectionString() + "\n");
             //ConnectionStage stage = ConnectionStage.ConnectionStarted;
             String buffer = "";
             int ch;
