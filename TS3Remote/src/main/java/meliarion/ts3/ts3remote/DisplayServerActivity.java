@@ -129,7 +129,7 @@ public class DisplayServerActivity extends Activity  implements RemoteUserInterf
         // Get the client_ip from the intent
         Intent intent = getIntent();
         String client_ip = intent.getStringExtra(LauncherActivity.CLIENT_IP);
-        boolean remote = intent.getBooleanExtra(LauncherActivity.USE_REMOTE,false);
+        ClientConnectionType type = ClientConnectionType.get(intent.getIntExtra(LauncherActivity.CONNECTION_TYPE,-1));
         setContentView(R.layout.activity_connection);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         String returnMsg;
@@ -137,7 +137,7 @@ public class DisplayServerActivity extends Activity  implements RemoteUserInterf
         NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
         if (networkInfo != null && networkInfo.isConnected())
         { try{
-            TS3ClientConnection connection = new TS3ClientConnection(client_ip, this,remote);
+            TS3ClientConnection connection = new TS3ClientConnection(client_ip, this,type);
             networkThread = new Thread(connection);
             networkThread.setName("Network Thread");
             networkThread.start();

@@ -27,16 +27,15 @@ import java.util.regex.Pattern;
 public class TS3ClientConnection implements Runnable, ClientConnectionInterface {
 
    // private Socket requestSocket;
+    ClientConnectionType connectionType;
     private NetworkInterface networkInterface;
-    private boolean remote;
     private StringBuilder returnStringBuffer = new StringBuilder();
     private InputStreamReader isr;
     private Writer osw;
-    private boolean useNetwork;
     private String TSClientIP;
     private RemoteUserInterface UI;
     private Handler mHandler;
-    private KeepAlive KeepAlive;
+    private KeepAlive keepAlive;
     public int DisplayedSCHandler=-1;
     private String sentCommand="";
     private int UsedSCHandlerIndex =-1;
@@ -45,17 +44,16 @@ public class TS3ClientConnection implements Runnable, ClientConnectionInterface 
     private List<ServerConnection> SCHandlers = new ArrayList<ServerConnection>();
 
 
-    public TS3ClientConnection(String _ip, RemoteUserInterface _ui, boolean _remote)
+    public TS3ClientConnection(String _ip, RemoteUserInterface _ui, ClientConnectionType _type)
     {
       this.TSClientIP = _ip;
       this.UI = _ui;
       this.mHandler = _ui.getHandler();
-      this.useNetwork = true;
-      this.remote = _remote;
+      this.connectionType = _type;
 
     }
     public boolean usingNetwork(){
-        return useNetwork;
+        return (connectionType.equals(ClientConnectionType.DirectNetwork)||connectionType.equals(ClientConnectionType.ManagedNetwork)||connectionType.equals(ClientConnectionType.SecureNetwork));
     }
 
     public ServerConnection getSCHandler(int scid)throws TSRemoteException{
@@ -68,12 +66,27 @@ public class TS3ClientConnection implements Runnable, ClientConnectionInterface 
     }
 
 
-    private void Connect()throws IOException{
-    if(useNetwork)
+    private void Connect()throws IOException, TSRemoteException{
+    if(this.networkInterface==null)
     {
-        NetworkConnect();
+        switch (connectionType)
+        {   case DirectNetwork:
+            networkInterface = new SocketNetworkInterface(TSClientIP);
+            break;
+            case ManagedNetwork:
+            networkInterface = new ManagedSocketNetworkInterface(TSClientIP);
+            break;
+            case SecureNetwork:
+            networkInterface = new SecureSocketNetworkInterface(TSClientIP);
+            break;
+            case USB:
+            networkInterface = new USBNetworkInterface();
+            break;
+            default:
+            throw new TSRemoteException("Invalid client connection type");
+        }
     }
-        else
+    else
     {
         throw new IOException();
     }
@@ -81,30 +94,37 @@ public class TS3ClientConnection implements Runnable, ClientConnectionInterface 
         this.isr = new InputStreamReader(this.networkInterface.getInputStream());
         Log.i("Connect","Making OSR");
         this.osw = new BufferedWriter(new OutputStreamWriter(this.networkInterface.getOutputStream()));
-        long keepAliveTime = 5*60*1000;
-        Log.i("Connect","Making KeepAlive");
-        KeepAlive =    new KeepAlive(this,keepAliveTime);
-        Thread keepAliveThread = new Thread(KeepAlive);
-        keepAliveThread.setName("Keep alive thread");
-        Log.i("Connect","Starting KeepAlive");
-        keepAliveThread.start();
-        KeepAlive.addSleepTime();
+        if(this.networkInterface.usesKeepAlive())
+        {
+            startKeepAlive();
+        }
         Log.i("Connect", "Initialisation done");
     }
-    private void NetworkConnect() throws IOException{
+    private void startKeepAlive()
+    {
+        Log.i("Connect","Making keepAlive");
+        long keepAliveTime = 5*60*1000;
+        keepAlive =    new KeepAlive(this,keepAliveTime);
+        Thread keepAliveThread = new Thread(keepAlive);
+        keepAliveThread.setName("Keep alive thread");
+        Log.i("Connect", "Starting keepAlive");
+        keepAliveThread.start();
+        keepAlive.addSleepTime();
+    }
+
+    /*private void NetworkConnect() throws IOException{
         if (this.networkInterface==null){
         Log.i("Connect","Making Socket");
-        if(remote)
-        {
-        this.networkInterface = new SocketNetworkInterface(this.TSClientIP, 25740);
+            if(remote)
+            {
+            this.networkInterface = new SocketNetworkInterface(this.TSClientIP, 25740);
+            }
+            else
+            {
+            this.networkInterface = new SocketNetworkInterface(this.TSClientIP, 25639);
+            }
         }
-        else
-        {
-        this.networkInterface = new SocketNetworkInterface(this.TSClientIP, 25639);
-        }
-
-        }
-    }
+    }*/
     public void SendCQMessage(String message)
     {
         SendMessage(message);
@@ -116,7 +136,9 @@ public class TS3ClientConnection implements Runnable, ClientConnectionInterface 
         String processedmessage = message+"\r\n";
         this.osw.write(processedmessage.toCharArray());
         this.osw.flush();
-        KeepAlive.addSleepTime();
+        if (keepAlive !=null){
+            keepAlive.addSleepTime();
+        }
         }
         catch (Exception e)
         {
@@ -125,7 +147,7 @@ public class TS3ClientConnection implements Runnable, ClientConnectionInterface 
     }
 
     public void run(){
-        UI.Received("Thread started");
+        Log.i("ClientConnection","Thread started");
         Thread thisThread = Thread.currentThread();
         try{
         Connect();
@@ -146,16 +168,16 @@ public class TS3ClientConnection implements Runnable, ClientConnectionInterface 
         }
         finally
         {   Log.e("TS3ClientConnection", "Read finished, thread closing.");
-            if (KeepAlive !=null)
+            if (keepAlive !=null)
             {
-            KeepAlive.close();
+            keepAlive.close();
             }
         }
     }
 
     private void Read() throws Exception{
         if (this.networkInterface.isConnected()){
-            UI.Received("connected to the server " + this.networkInterface.getConnectionString() + "\n");
+            Log.i("Initialisation","connected to the server " + this.networkInterface.getConnectionString() + "\n");
             //ConnectionStage stage = ConnectionStage.ConnectionStarted;
             String buffer = "";
             int ch;
@@ -243,9 +265,11 @@ public class TS3ClientConnection implements Runnable, ClientConnectionInterface 
         }
     }
     private void handleVerifyConnect(String buffer) throws  TSRemoteException
-    {
-                    if(VerifyClientConnect(buffer))
-            {   SendMessage("clientnotifyregister schandlerid=0 event=any");
+    {       String[] SCHandlerInfo = new String[2];
+            if(networkInterface.verifyConnect(buffer,SCHandlerInfo))
+            {   DisplayedSCHandler=Integer.valueOf(SCHandlerInfo[0]);
+                parseSCHandlers(SCHandlerInfo[1]);
+                SendMessage("clientnotifyregister schandlerid=0 event=any");
                 connected=true;
             }
             else
@@ -350,7 +374,7 @@ public class TS3ClientConnection implements Runnable, ClientConnectionInterface 
         }
         return false;
     }
-    private boolean VerifyClientConnect(String buffer) throws TSRemoteException{
+    /*private boolean VerifyClientConnect(String buffer) throws TSRemoteException{
         String tBuffer = buffer.trim();
         String patternString= "";
         if (remote)
@@ -371,7 +395,7 @@ public class TS3ClientConnection implements Runnable, ClientConnectionInterface 
         else {
         return false;
     }
-    }
+    }*/
     private void SCHandlerAdvance(){
 
         if (UsedSCHandlerIndex == SCHandlers.size()-1)
@@ -380,11 +404,13 @@ public class TS3ClientConnection implements Runnable, ClientConnectionInterface 
             msg.sendToTarget();
             if(!sentCommand.equals("currentschandlerid")){
             SendMessage("currentschandlerid");}
-            KeepAlive.initialisingDone();
+            if(keepAlive != null){
+            keepAlive.initialisingDone();
+            }
         }
         else
         {   UsedSCHandlerIndex++;
-            SendMessage("use "+SCHandlers.get(UsedSCHandlerIndex).getID());
+            SendMessage("use " + SCHandlers.get(UsedSCHandlerIndex).getID());
         }
     }
     private void parseSCHandlers(String handlerBlock) throws TSRemoteException{
@@ -772,7 +798,7 @@ public class TS3ClientConnection implements Runnable, ClientConnectionInterface 
         {
             Set<String> keys = params.keySet();
             Iterator<String> iterKeys = keys.iterator();
-            Map<String,String> chanMap = new HashMap<String, String>();
+            //Map<String,String> chanMap = new HashMap<String, String>();
             Pattern pattern = Pattern.compile("(\\d+)?(.+)");
             Matcher m;
             String s;
@@ -783,24 +809,20 @@ public class TS3ClientConnection implements Runnable, ClientConnectionInterface 
                 m = pattern.matcher(s);
                 if(m.find())
                 {  if((m.group(1)!=null)&&(Integer.valueOf(m.group(1))>i))
-                {   channel = new TSChannel(chanMap);
+                {   channel = new TSChannel(params ,i);
                     server.AddChannel(channel);
-                    chanMap.clear();
+                    //chanMap.clear();
                     i++;
                 }
 
-                    chanMap.put(m.group(2),params.get(s));
+                    //chanMap.put(m.group(2),params.get(s));
                 }
                 else
                 {
                     throw new TSRemoteException("Unable to build channel parameter map");
                 }
             }
-            channel=new TSChannel(chanMap);
-            if(i>-1)
-            {
-                //server.ClientListReceived ();
-            }
+            channel=new TSChannel(params,i);
             server.AddChannel(channel);
         }
         else if (type.equals("notifyclientneededpermissions"))

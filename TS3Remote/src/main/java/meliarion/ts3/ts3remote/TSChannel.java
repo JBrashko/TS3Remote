@@ -54,7 +54,7 @@ public class TSChannel implements Comparable<TSChannel>{
          remainder = mtest.group(3);
          mtest = ptest.matcher(remainder);
         }
-        initialise(testmap);
+        initialise(testmap,-1);
         /*Pattern channel = Pattern.compile("cid=(\\d+) pid=(\\d+) channel_order=(\\d+) channel_name=(\\S+) channel_topic=?(\\S*) channel_flag_default=(\\d) channel_flag_password=(\\d) channel_flag_permanent=(\\d) channel_flag_semi_permanent=(\\d) channel_codec=(\\d+) channel_codec_quality=(\\d+) channel_needed_talk_power=(\\d+) channel_icon_id=(\\d+) channel_maxclients=(-?\\d+) channel_maxfamilyclients=(-?\\d+) channel_flag_are_subscribed=(\\d) total_clients=(\\d+)");
         Matcher m = channel.matcher(datablock);
         boolean b;
@@ -85,57 +85,61 @@ public class TSChannel implements Comparable<TSChannel>{
 
     }
     public TSChannel (Map<String,String> params){
-    initialise(params);
+    initialise(params,-1);
     }
-    private void initialise(Map<String,String>params)
+    public TSChannel (Map<String, String> params, int index)
     {
-        this.ID = Integer.valueOf(params.get("cid"));
-        if(params.containsKey("cpid")){
-        this.ChannelParentID = Integer.valueOf(params.get("cpid"));
+        initialise(params,index);
+    }
+    private void initialise(Map<String,String>params, int index)
+    {String prefix = getPrefix(index);
+        this.ID = Integer.valueOf(params.get(prefix+"cid"));
+        if(params.containsKey(prefix+"cpid")){
+        this.ChannelParentID = Integer.valueOf(params.get(prefix+"cpid"));
         }
         else
         {
-        this.ChannelParentID = Integer.valueOf(params.get("pid"));
+        this.ChannelParentID = Integer.valueOf(params.get(prefix+"pid"));
         }
-        this.order = Integer.valueOf(params.get("channel_order"));
-        this.Name = params.get("channel_name");
-        if(params.containsKey("channel_topic")){
-            this.topic = params.get("channel_topic");
+        this.order = Integer.valueOf(params.get(prefix+"channel_order"));
+        this.Name = params.get(prefix+"channel_name");
+        if(params.containsKey(prefix+"channel_topic")){
+            this.topic = params.get(prefix+"channel_topic");
         }
-        this.isDefaultChannel = (params.containsKey("channel_flag_default")&&(params.get("channel_flag_default").equals("1")));
-        if(params.containsKey("channel_codec")){
-            setCodec(Integer.valueOf(params.get("channel_codec")));
+        this.isDefaultChannel = (params.containsKey(prefix+"channel_flag_default")&&(params.get(prefix+"channel_flag_default").equals("1")));
+        if(params.containsKey(prefix+"channel_codec")){
+            setCodec(Integer.valueOf(params.get(prefix+"channel_codec")));
         }
-        if (params.containsKey("channel_codec_quality")){
-            this.CodecQuality = Integer.valueOf(params.get("channel_codec_quality"));
+        if (params.containsKey(prefix+"channel_codec_quality")){
+            this.CodecQuality = Integer.valueOf(params.get(prefix+"channel_codec_quality"));
         }
-        this.isUnencrypted = params.containsKey("channel_codec_is_unencrypted")&&params.get("channel_codec_is_unencrypted").equals("1");
-        this.isPermanent = (params.containsKey("channel_flag_permanent"))&&params.get("channel_flag_permanent").equals("1");
-        this.isSemiPermanent = params.containsKey("channel_flag_semi_permanent")&&params.get("channel_flag_permanent").equals("1");
-        this.hasPassword = params.containsKey("channel_flag_password")&&params.get("channel_flag_password").equals("1");
-        if(params.containsKey("channel_codec"))
+        this.isUnencrypted = params.containsKey(prefix+"channel_codec_is_unencrypted")&&params.get(prefix+"channel_codec_is_unencrypted").equals("1");
+        this.isPermanent = (params.containsKey(prefix+"channel_flag_permanent"))&&params.get(prefix+"channel_flag_permanent").equals("1");
+        this.isSemiPermanent = params.containsKey(prefix+"channel_flag_semi_permanent")&&params.get(prefix+"channel_flag_permanent").equals("1");
+        this.hasPassword = params.containsKey(prefix+"channel_flag_password")&&params.get(prefix+"channel_flag_password").equals("1");
+        if(params.containsKey(prefix+"channel_codec"))
         {
-        setCodec(Integer.valueOf(params.get("channel_codec")));
+        setCodec(Integer.valueOf(params.get(prefix+"channel_codec")));
         }
-        if(params.containsKey("channel_needed_talk_power")){
-        this.neededTalkPower = Integer.valueOf(params.get("channel_needed_talk_power"));
+        if(params.containsKey(prefix+"channel_needed_talk_power")){
+        this.neededTalkPower = Integer.valueOf(params.get(prefix+"channel_needed_talk_power"));
         }
-        if(params.containsKey("channel_icon_id"))
+        if(params.containsKey(prefix+"channel_icon_id"))
         {
-        this.iconID = Integer.valueOf(params.get("channel_icon_id"));
+        this.iconID = Integer.valueOf(params.get(prefix+"channel_icon_id"));
         }
-        if(params.containsKey("channel_maxclients"))
+        if(params.containsKey(prefix+"channel_maxclients"))
         {
-        this.maxClients = Integer.valueOf(params.get("channel_maxclients"));
+        this.maxClients = Integer.valueOf(params.get(prefix+"channel_maxclients"));
         }
-        if(params.containsKey("channel_maxfamilyclients"))
+        if(params.containsKey(prefix+"channel_maxfamilyclients"))
         {
-        this.maxClientsFamily = Integer.valueOf(params.get("channel_maxfamilyclients"));
+        this.maxClientsFamily = Integer.valueOf(params.get(prefix+"channel_maxfamilyclients"));
         }
-        this.subscribed = params.containsKey("channel_flag_are_subscirbed")&&params.get("channel_flag_are_subscirbed").equals("1");
-        if (params.containsKey("total_clients"))
+        this.subscribed = params.containsKey(prefix+"channel_flag_are_subscirbed")&&params.get(prefix+"channel_flag_are_subscirbed").equals("1");
+        if (params.containsKey(prefix+"total_clients"))
         {
-        this.totalClients = Integer.valueOf(params.get("total_clients"));
+        this.totalClients = Integer.valueOf(params.get(prefix+"total_clients"));
         }
         setType();
 
@@ -168,6 +172,17 @@ public class TSChannel implements Comparable<TSChannel>{
     }
     public void setIcon(int _id){
         iconID = _id;
+    }
+    public static String getPrefix(int index)
+    {
+        if (index==-1)
+        {
+            return "";
+        }
+        else
+        {
+            return index+"";
+        }
     }
     public void updateChannel(Map<String,String> params){
         if (params.containsKey("cid"))

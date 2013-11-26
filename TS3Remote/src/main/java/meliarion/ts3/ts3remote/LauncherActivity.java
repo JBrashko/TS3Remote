@@ -10,7 +10,8 @@ import android.widget.EditText;
 
 public class LauncherActivity extends Activity {
     public final static String CLIENT_IP = "Meliarion.TS3.TS3Remote.CLIENTIP";
-    public final static String USE_REMOTE= "Meliarion.TS3.TS3Remote.REMOTE";
+   // public final static String USE_REMOTE= "Meliarion.TS3.TS3Remote.REMOTE";
+    public final static String CONNECTION_TYPE = "Meliarion.TS3.TS3Remote.CLIENTTYPE";
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -47,9 +48,18 @@ public class LauncherActivity extends Activity {
     {
         CheckBox box = (CheckBox)findViewById(R.id.useRemote);
         boolean remote = box.isChecked();
+        ClientConnectionType type;
+        if(remote){
+            type = ClientConnectionType.ManagedNetwork;
+        }
+        else
+        {
+            type = ClientConnectionType.DirectNetwork;
+        }
+
         Intent intent = new Intent(this, DisplayServerActivity.class);
         intent.putExtra(CLIENT_IP, target);
-        intent.putExtra(USE_REMOTE,remote);
+        intent.putExtra(CONNECTION_TYPE,type.showCode());
         startActivity(intent);
     }
 
