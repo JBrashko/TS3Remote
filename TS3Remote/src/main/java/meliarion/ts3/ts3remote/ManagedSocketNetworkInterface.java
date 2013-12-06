@@ -6,6 +6,7 @@ import java.util.regex.Pattern;
 
 
 /**
+ * Class that represents an unencrypted connection to the remote manager
  * Created by Meliarion on 26/11/13.
  */
 public class ManagedSocketNetworkInterface extends SocketNetworkInterface  implements NetworkInterface {

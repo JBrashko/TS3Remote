@@ -458,13 +458,24 @@ public class ServerConnection {
         throw new SCNotFoundException("ServerGroup id="+ID+" not found",ItemNotFoundType.ServerGroup);*/
     }
     public TSGroup getChannelGroupByID(int ID) throws SCNotFoundException {
-
-        for (TSGroup group : ChannelGroupList) {
+        try {
+            int index = ChannelGroupMap.get(Integer.valueOf(ID));
+            if (index != -1)
+            {
+                return ChannelGroupList.get(index);
+            }
+            throw new SCNotFoundException("ChannelGroup id="+ID+" not found", ItemNotFoundType.ChannelGroup);
+        }
+        catch (Exception ex)
+        {
+            throw new SCNotFoundException("ChannelGroup id="+ID+" not found", ItemNotFoundType.ChannelGroup, ex);
+        }
+        /*for (TSGroup group : ChannelGroupList) {
             if (group.getID() == ID) {
                 return group;
             }
-        }
-        throw new SCNotFoundException("ChannelGroup id="+ID+" not found", ItemNotFoundType.ChannelGroup);
+        }*/
+
     }
     public TSChannel getChannelByID(int ID) throws SCNotFoundException {
          try{

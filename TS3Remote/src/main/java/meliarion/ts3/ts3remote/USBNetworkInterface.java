@@ -5,6 +5,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 /**
+ * Stub for the future implementation of USB connectivity
  * Created by Meliarion on 21/11/13.
  */
 public class USBNetworkInterface implements NetworkInterface {

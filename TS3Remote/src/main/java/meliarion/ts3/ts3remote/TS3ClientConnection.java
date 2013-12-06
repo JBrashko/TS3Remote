@@ -174,11 +174,13 @@ public class TS3ClientConnection implements Runnable, ClientConnectionInterface 
             }
         }
     }
+    private void VerifyConnect()
+    {
 
+    }
     private void Read() throws Exception{
         if (this.networkInterface.isConnected()){
             Log.i("Initialisation","connected to the server " + this.networkInterface.getConnectionString() + "\n");
-            //ConnectionStage stage = ConnectionStage.ConnectionStarted;
             String buffer = "";
             int ch;
             Pattern response = Pattern.compile("error\\sid=(\\d+)\\smsg=([^$]*)");
@@ -275,7 +277,10 @@ public class TS3ClientConnection implements Runnable, ClientConnectionInterface 
             else
             {throw new TSRemoteException("Connection failed");}
     }
+    private void EstablishedConnection()
+    {
 
+    }
     private void setupResponse(String buffer)throws TSRemoteException {
         if(connected&& UsedSCHandlerIndex ==-1)
         {   SendMessage("use " + SCHandlers.get(0).getID());
@@ -332,20 +337,11 @@ public class TS3ClientConnection implements Runnable, ClientConnectionInterface 
         Matcher m = channelList.matcher(buffer.trim());
         TSChannel channel;
         if (m.find()){
-            try{
                 channel = new TSChannel(m.group(1));
                 curr.AddChannel(channel);
-            }
-            catch (Exception e){
-                new TSRemoteException("error making channel:"+m.group(1)+". "+e);
-            }
             while(m.find()){
-                try{
                     channel = new TSChannel(m.group(1));
                     curr.AddChannel(channel);
-                }catch (Exception e){
-                    new TSRemoteException("error making channel:"+m.group(1)+". "+e);
-                }
             }
             curr.processChannels();
             curr.ChannelsReceived();
@@ -684,6 +680,7 @@ public class TS3ClientConnection implements Runnable, ClientConnectionInterface 
         }
         else if(type.equals("notifyservergroupclientadded"))
         {
+            Log.i("Notify","Unused notify type:"+type);
           //  int clid = Integer.valueOf(params.get("clid"));
           //  int sgid = Integer.valueOf(params.get("sgid"));
           //  getSchandler(scid).getClientByCLID(clid).addServerGroup(sgid);
@@ -783,11 +780,11 @@ public class TS3ClientConnection implements Runnable, ClientConnectionInterface 
             }
             else if (status.equals("connection_establishing"))
             {
-
+                Log.i("Connection","Unused connection status:"+status);
             }
             else if(status.equals("connection_established"))
             {
-
+                Log.i("Connection","Unused connection status:"+status);
             }
             else if (status.equals("disconnected"))
             {
@@ -853,11 +850,11 @@ public class TS3ClientConnection implements Runnable, ClientConnectionInterface 
         }
         else if (type.equals("notifychannelpermlist"))
         {
-
+            Log.i("Notify","Unused notify type:"+type);
         }
         else if (type.equals("notifyservergrouppermlist"))
         {
-
+            Log.i("Notify","Unused notify type:"+type);
         }
         else if(type.equals("notifychannelmoved"))
         {int cid = Integer.valueOf(params.get("cid"));
@@ -880,11 +877,11 @@ public class TS3ClientConnection implements Runnable, ClientConnectionInterface 
         }
         else if (type.equals("notifyfilelist"))
         {
-
+            Log.i("Notify","Unused notify type:"+type);
         }
         else if (type.equals("notifyfilelistfinished"))
         {
-
+            Log.i("Notify","Unused notify type:"+type);
         }
         else if (type.equals("notifychanneldescriptionchanged"))
         {int cid = Integer.valueOf(params.get("cid"));
@@ -892,7 +889,7 @@ public class TS3ClientConnection implements Runnable, ClientConnectionInterface 
         }
         else if (type.equals("notifystartdownload"))
         {
-
+            Log.i("Notify","Unused notify type:"+type);
         }
         else if (type.equals("channellistfinished"))
         {
@@ -901,11 +898,11 @@ public class TS3ClientConnection implements Runnable, ClientConnectionInterface 
         }
         else if (type.equals("notifymutedclientdisconnected"))
         {
-
+            Log.i("Notify","Unused notify type:"+type);
         }
         else
         {   Log.w("Notify","Unhandled notify type:"+type);
-            UI.Received("received  "+type+" from SCHandler="+server.getID());
+            //UI.Received("received  "+type+" from SCHandler="+server.getID());
         }
     }
 }

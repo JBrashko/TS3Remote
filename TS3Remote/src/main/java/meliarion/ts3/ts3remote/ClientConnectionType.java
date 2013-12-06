@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
+ * Enum that lists the different ways that the remote can connect to the client/manager
  * Created by Meliarion on 25/11/13.
  */
 public enum ClientConnectionType {

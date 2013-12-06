@@ -32,17 +32,17 @@ public class ClientOrderer implements Comparator<Integer> {
             return -1;
         }
         else {
-            return compareTalkPrivilage(client1,client2);
+            return compareTalkPrivilege(client1, client2);
         }
         }
         catch (ServerConnection.SCException ex)
         {
-        Log.e("ClientOrderer","unable to retrieve client from clientlist. "+ex.getErrorDescription());
+        Log.e("ClientOrderer","unable to retrieve client from client list. "+ex.getErrorDescription());
         return 0;
         }
 
     }
-    private int compareTalkPrivilage(TSClient client1,TSClient client2)
+    private int compareTalkPrivilege(TSClient client1, TSClient client2)
     {
         Log.d("ClientOrderer","Comparing "+client1.getName()+" and "+client2.getName() + ". Now checking for talk privileges.");
         if (client1.isTalker()&&!client2.isTalker())

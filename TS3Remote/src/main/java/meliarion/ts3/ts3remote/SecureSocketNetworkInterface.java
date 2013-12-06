@@ -7,6 +7,7 @@ import java.io.OutputStream;
 import javax.net.ssl.SSLSocket;
 
 /**
+ * Stub that represents an encrypted connection to the remote manager
  * Created by Meliarion on 11/11/13.
  */
 public class SecureSocketNetworkInterface implements NetworkInterface {

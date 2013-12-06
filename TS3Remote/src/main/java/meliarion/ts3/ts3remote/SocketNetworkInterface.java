@@ -8,8 +8,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
+ * Class that represents a direct connection to the TS3 client
  * Created by Meliarion on 11/11/13.
- * Manages a socket connection to the client/remote
  */
 public class SocketNetworkInterface implements NetworkInterface {
     private Socket socket;

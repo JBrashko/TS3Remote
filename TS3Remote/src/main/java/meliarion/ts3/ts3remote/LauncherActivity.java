@@ -38,7 +38,14 @@ public class LauncherActivity extends Activity {
 
     public void serverConnect (View view){
      EditText editText = (EditText) findViewById(R.id.edit_message);
-     connect(editText.getText().toString());
+     try {
+        String ip = editText.getText().toString();
+        connect(ip);
+        }
+     catch (NullPointerException ex)
+        {
+
+        }
     }
 
     public void testConnect (View view){
