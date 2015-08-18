@@ -14,6 +14,8 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.EditText;
+import android.widget.TabHost;
+import android.widget.TextView;
 
 /**
  * Created by Meliarion on 05/06/13.
@@ -152,6 +154,11 @@ public class DisplayServerActivity extends Activity  implements RemoteUserInterf
         {
             returnMsg="Connection failed";
         }
+       /* TabHost tabs = (TabHost) findViewById(R.id.tabHost) ;
+        tabs.setup();
+        TabHost.TabSpec channelChatSpec = tabs.newTabSpec("Channel");
+        tabs.addTab(channelChatSpec);
+        tabs.setCurrentTab(0);*/
     }
 
     @Override
@@ -197,6 +204,12 @@ public class DisplayServerActivity extends Activity  implements RemoteUserInterf
         return super.onOptionsItemSelected(item);
 
     }
+    public void TestButton (View view)
+    {
+        TSServerView serverView = (TSServerView) findViewById(R.id.serverView);
+        serverView.refresh();
+    }
+
     public void SendMessage (View view){
         try{
         EditText editText = (EditText) findViewById(R.id.commands);
@@ -214,14 +227,18 @@ public class DisplayServerActivity extends Activity  implements RemoteUserInterf
     serverChat.setText(sc.getServerChat());
     TextView channelChat = (TextView) findViewById(R.id.channelChatView);
     channelChat.setText(sc.getChannelChat());*/
+        TextView Chat = (TextView) findViewById(R.id.ChatTextView);
+        Chat.append("New chat message received."+"\r\n");
         switch (msg.arg2){//arg2 is the chat type
-            case 1:
+            case 1://private message
 
             break;
-            case 2:
+            case 2://channel chat
+
             //Chat.setText(sc.getChannelChat());
             break;
-            case 3:
+            case 3://server chat
+
             //Chat.setText(sc.getServerChat());
             break;
 

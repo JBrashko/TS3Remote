@@ -13,7 +13,7 @@ public enum ClientConnectionType {
     DirectNetwork(0),
     ManagedNetwork(1),
     SecureNetwork(2),
-    USB(3);
+    USBADB(3);
     private int Code;
     ClientConnectionType(int messageCode)
     {

@@ -68,6 +68,8 @@ public class TSServerView extends View {
         invalidate();
         requestLayout();
     }
+    public void refresh()
+    {requestRedraw();}
     public void setHandler(ServerConnection _curr){
         connection =_curr;
         buildChannels();

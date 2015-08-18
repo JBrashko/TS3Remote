@@ -10,21 +10,18 @@ import java.util.regex.Pattern;
  * Created by Meliarion on 26/11/13.
  */
 public class ManagedSocketNetworkInterface extends SocketNetworkInterface  implements NetworkInterface {
-    public ManagedSocketNetworkInterface(String _ip) throws IOException {
+    //String patternString="TS3 Remote Manager\\s+TS3 remote connected successfully\\s+selected schandlerid=(\\d+)\\s+(.*)\\s+(.*)";
+    String password;
+    public ManagedSocketNetworkInterface(String _ip,String _password) throws IOException {
         super(_ip, 25740);
+        password = _password;
+        patternString="TS3 Remote Manager\\s+TS3 remote connected successfully\\s+selected schandlerid=(\\d+)\\s+(.*)\\s+(.*)";
     }
 
     @Override
-    public boolean verifyConnect(String data,String[] SCHandlers) {
-        String tBuffer = data.trim();
-        String patternString= "";
-            patternString="TS3 Remote Manager\\s+TS3 remote connected successfully\\s+selected schandlerid=(\\d+)\\s+(.*)";
-        Pattern pattern = Pattern.compile(patternString);
-        Matcher m = pattern.matcher(tBuffer);
-        if (m.matches()){
-            SCHandlers[0]= m.group(1);
-            SCHandlers[1] = m.group(2);
-            return true;
+    public boolean verifyConnect(String data, String[] connectInfo) {
+        if(password==""){
+        return super.verifyConnect(data, connectInfo);
         }
         else
         {

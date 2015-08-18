@@ -26,7 +26,6 @@ import java.util.regex.Pattern;
  */
 public class TS3ClientConnection implements Runnable, ClientConnectionInterface {
 
-   // private Socket requestSocket;
     ClientConnectionType connectionType;
     private NetworkInterface networkInterface;
     private StringBuilder returnStringBuffer = new StringBuilder();
@@ -41,6 +40,8 @@ public class TS3ClientConnection implements Runnable, ClientConnectionInterface 
     private int UsedSCHandlerIndex =-1;
     private boolean connected=false;
     private boolean notifyRegistered=false;
+    private static Pattern response = Pattern.compile("error\\sid=(\\d+)\\smsg=([^$]*)");
+    private static Pattern notify = Pattern.compile("(\\S+)\\sschandlerid=(\\d+)\\s*(.*)");
     private List<ServerConnection> SCHandlers = new ArrayList<ServerConnection>();
 
 
@@ -74,13 +75,13 @@ public class TS3ClientConnection implements Runnable, ClientConnectionInterface 
             networkInterface = new SocketNetworkInterface(TSClientIP);
             break;
             case ManagedNetwork:
-            networkInterface = new ManagedSocketNetworkInterface(TSClientIP);
+            networkInterface = new ManagedSocketNetworkInterface(TSClientIP,"");
             break;
             case SecureNetwork:
             networkInterface = new SecureSocketNetworkInterface(TSClientIP);
             break;
-            case USB:
-            networkInterface = new USBNetworkInterface();
+            case USBADB:
+            networkInterface = new USBADBNetworkInterface();
             break;
             default:
             throw new TSRemoteException("Invalid client connection type");
@@ -112,19 +113,6 @@ public class TS3ClientConnection implements Runnable, ClientConnectionInterface 
         keepAlive.addSleepTime();
     }
 
-    /*private void NetworkConnect() throws IOException{
-        if (this.networkInterface==null){
-        Log.i("Connect","Making Socket");
-            if(remote)
-            {
-            this.networkInterface = new SocketNetworkInterface(this.TSClientIP, 25740);
-            }
-            else
-            {
-            this.networkInterface = new SocketNetworkInterface(this.TSClientIP, 25639);
-            }
-        }
-    }*/
     public void SendCQMessage(String message)
     {
         SendMessage(message);
@@ -174,17 +162,36 @@ public class TS3ClientConnection implements Runnable, ClientConnectionInterface 
             }
         }
     }
-    private void VerifyConnect()
+    private void VerifyConnect(String receivedLine)throws TSRemoteException
     {
-
+        String[] connectInfo = new String[2];
+        connectInfo[0]="";
+        if(networkInterface.verifyConnect(receivedLine,connectInfo))  //if we are connected then
+        {   DisplayedSCHandler=Integer.valueOf(connectInfo[0]);       //connectInfo[0] will have the displayed SChandler
+            parseSCHandlers(connectInfo[1]);                          //and SCHandler[1] will list all the current SCHandlers
+            SendMessage("clientnotifyregister schandlerid=0 event=any");//
+            connected=true;
+        }
+        else
+        {                  //if we are not connected then
+            if (connectInfo[0].equals("response")){ //connectInfo[0] will be equal to response if the connection requires a response
+                String message = connectInfo[1];    //connectInfo[1] will be the response to send
+                SendMessage(message);
+            }
+            else if(connectInfo[0].equals("wait")) //connectInfo[0] will be equal to "wait" if the connection doesn't require a response
+            {
+                return;
+            }
+            else                                    //otherwise throw an error
+            {
+                throw new TSRemoteException("Connection failed");
+            }
+        }
     }
     private void Read() throws Exception{
         if (this.networkInterface.isConnected()){
             Log.i("Initialisation","connected to the server " + this.networkInterface.getConnectionString() + "\n");
-            String buffer = "";
             int ch;
-            Pattern response = Pattern.compile("error\\sid=(\\d+)\\smsg=([^$]*)");
-            Pattern notify = Pattern.compile("(\\S+)\\sschandlerid=(\\d+)\\s*(.*)");
             while ((ch = isr.read()) != -1){
                 //UI.Received(((char) this.ch)+"");
                 char c = (char)ch;
@@ -195,70 +202,17 @@ public class TS3ClientConnection implements Runnable, ClientConnectionInterface 
                     {
                         continue;
                     }
-                    Log.i("Meliarion.TS3.TS3Remote.CQMessage", receivedLine);
-                    UI.Received(receivedLine);
-                    Matcher match = response.matcher(receivedLine);
-                    if(match.find()){
-                        if (Integer.valueOf(match.group(1)) != 0)
-                        {
-                            try{
-                            ManageError(Integer.valueOf(match.group(1)),match.group(2));
-                            }
-                            catch (ClientQueryMessageException ex)
-                            {
-                                if(ex.getCode()==1794)
-                                {
-                                    ServerConnection curr =SCHandlers.get(UsedSCHandlerIndex);
-                                    curr.Disconnect();
-                                    Message msg =  mHandler.obtainMessage(TSMessageType.ServerConnectionChange.showCode(),curr.getID(),0,"Server connection is not connected");
-                                    msg.sendToTarget();
-                                    SendMessage("currentschandlerid");
-                                }
-                                else
-                                {
-                                    throw ex;
-                                }
-                            }
-                        }
-                        else
-                        {   if (!connected)
-                            {
-                            handleVerifyConnect(buffer);
-                            buffer = "";
-                            continue;
-                            }
-                            if(!commandResponse(buffer))
-                            {
-                                Log.e("CommandResponse","Error processing command response for command:"+sentCommand+" and resoponse:"+buffer);
-                            }
-                            if (!(UsedSCHandlerIndex >=0&&SCHandlers.get(UsedSCHandlerIndex).getStage()==ConnectionStage.SetupDone))
-                            {
-                            setupResponse(buffer);
-                            }
-                                buffer = "";
-                        }
+                    if(!connected)
+                    {
+                        VerifyConnect(receivedLine);
                     }
                     else
                     {
-                        if(SCHandlers.size()==0&&!sentCommand.equals("serverconnectionhandlerlist"))
+                        if(EstablishedConnection(receivedLine))//returns true when the received data has been processed
                         {
-                            SendMessage("serverconnectionhandlerlist");
+                        this.returnStringBuffer.delete(0,this.returnStringBuffer.length());
                         }
-                        else
-                        {
-                                Matcher nMatch = notify.matcher(receivedLine);
-                                if (nMatch.find()&&(DisplayedSCHandler>=0)){
-                                    String type = nMatch.group(1);
-                                    int SCHandler = Integer.valueOf(nMatch.group(2));
-                                    String params = nMatch.group(3);
-                                    notifyResponce(type,SCHandler,params);
-                                    this.returnStringBuffer.delete(0,this.returnStringBuffer.length());
-                                    continue;
-                                }
-                        }
-                        buffer +=receivedLine;
                     }
-                    this.returnStringBuffer.delete(0,this.returnStringBuffer.length());
                 }
             }
             Message msg = mHandler.obtainMessage(TSMessageType.ClientConnectionAltered.showCode(),0,0,"Client connection closed");
@@ -266,20 +220,66 @@ public class TS3ClientConnection implements Runnable, ClientConnectionInterface 
              Log.e("TS3ClientConnection","Client connection closed");
         }
     }
-    private void handleVerifyConnect(String buffer) throws  TSRemoteException
-    {       String[] SCHandlerInfo = new String[2];
-            if(networkInterface.verifyConnect(buffer,SCHandlerInfo))
-            {   DisplayedSCHandler=Integer.valueOf(SCHandlerInfo[0]);
-                parseSCHandlers(SCHandlerInfo[1]);
-                SendMessage("clientnotifyregister schandlerid=0 event=any");
-                connected=true;
+    private boolean EstablishedConnection(String receivedLine) throws Exception
+    {
+        Log.i("Meliarion.TS3.TS3Remote.CQMessage", receivedLine);
+        UI.Received(receivedLine);
+        Matcher match = response.matcher(receivedLine);
+        if(match.find()){
+            if (Integer.valueOf(match.group(1)) != 0)
+            {
+                try{
+                    ManageError(Integer.valueOf(match.group(1)),match.group(2));
+                }
+                catch (ClientQueryMessageException ex)
+                {
+                    if(ex.getCode()==1794)
+                    {
+                        ServerConnection curr =SCHandlers.get(UsedSCHandlerIndex);
+                        curr.Disconnect();
+                        Message msg =  mHandler.obtainMessage(TSMessageType.ServerConnectionChange.showCode(),curr.getID(),0,"Server connection is not connected");
+                        msg.sendToTarget();
+                        SendMessage("currentschandlerid");
+                    }
+                    else
+                    {
+                        throw ex;
+                    }
+                }
             }
             else
-            {throw new TSRemoteException("Connection failed");}
-    }
-    private void EstablishedConnection()
-    {
+            {
+                if(!commandResponse(receivedLine))
+                {
+                    Log.e("CommandResponse","Error processing command response for command:"+sentCommand+" and resoponse:"+receivedLine);
+                }
+                if (!(UsedSCHandlerIndex >=0&&SCHandlers.get(UsedSCHandlerIndex).getStage()==ConnectionStage.SetupDone))
+                {
+                    setupResponse(receivedLine);
+                }
+                return true;
+            }
+        }
+        else
+        {
+            if(SCHandlers.size()==0&&!sentCommand.equals("serverconnectionhandlerlist"))
+            {
+                SendMessage("serverconnectionhandlerlist");
+            }
+            else
+            {
+                Matcher nMatch = notify.matcher(receivedLine);
+                if (nMatch.find()&&(DisplayedSCHandler>=0)){
+                    String type = nMatch.group(1);
+                    int SCHandler = Integer.valueOf(nMatch.group(2));
+                    String params = nMatch.group(3);
+                    notifyResponce(type,SCHandler,params);
+                    return true;
+                }
+            }
 
+        }
+        return false;
     }
     private void setupResponse(String buffer)throws TSRemoteException {
         if(connected&& UsedSCHandlerIndex ==-1)
@@ -370,28 +370,7 @@ public class TS3ClientConnection implements Runnable, ClientConnectionInterface 
         }
         return false;
     }
-    /*private boolean VerifyClientConnect(String buffer) throws TSRemoteException{
-        String tBuffer = buffer.trim();
-        String patternString= "";
-        if (remote)
-        {
-            patternString="TS3 Remote Manager\\s+TS3 remote connected successfully\\s+selected schandlerid=(\\d+)\\s+(.*)";
-        }
-        else
-        {
-            patternString="TS3 Client\\s+Welcome to the TeamSpeak 3.+\\s+selected schandlerid=(\\d+)\\s+(.*)";
-        }
-        Pattern pattern = Pattern.compile(patternString);
-        Matcher m = pattern.matcher(tBuffer);
-        if (m.matches()){
-            DisplayedSCHandler=Integer.valueOf(m.group(1));
-            parseSCHandlers(m.group(2));
-            return true;
-        }
-        else {
-        return false;
-    }
-    }*/
+
     private void SCHandlerAdvance(){
 
         if (UsedSCHandlerIndex == SCHandlers.size()-1)
@@ -885,7 +864,7 @@ public class TS3ClientConnection implements Runnable, ClientConnectionInterface 
         }
         else if (type.equals("notifychanneldescriptionchanged"))
         {int cid = Integer.valueOf(params.get("cid"));
-
+            Log.i("Notify","Unused notify type:"+type);
         }
         else if (type.equals("notifystartdownload"))
         {

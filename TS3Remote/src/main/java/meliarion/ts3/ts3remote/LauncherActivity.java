@@ -49,7 +49,13 @@ public class LauncherActivity extends Activity {
     }
 
     public void testConnect (View view){
-        connect("192.168.0.3");
+        connect("192.168.0.6");
+    }
+    public void USBADBConnect (View view){
+        ClientConnectionType type = ClientConnectionType.USBADB;
+        Intent intent = new Intent(this, DisplayServerActivity.class);
+        intent.putExtra(CONNECTION_TYPE,type.showCode());
+        startActivity(intent);
     }
     private void connect(String target)
     {
