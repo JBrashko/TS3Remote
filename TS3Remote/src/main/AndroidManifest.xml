@@ -8,7 +8,7 @@
 http://schemas.android.com/apk/res/android ">
 
     <uses-sdk
-        android:minSdkVersion="10"
+        android:minSdkVersion="11"
         android:targetSdkVersion="17" />
 
     <uses-permission android:name="android.permission.INTERNET" />
