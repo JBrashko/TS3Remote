@@ -4,15 +4,16 @@
     android:orientation="vertical"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
-    xmlns:android="http://schemas.android.com/apk/res/android">
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:weightSum="1">
 
     <ScrollView
-            android:layout_width="wrap_content"
-            android:layout_height="607dp"
+            android:layout_width="match_parent"
+            android:layout_height="350dp"
             android:id="@+id/scrollView3"
             android:measureAllChildren="false">
         <meliarion.ts3.ts3remote.TSServerView
-                android:layout_height="fill_parent"
+                android:layout_height="wrap_content"
                 android:layout_width="fill_parent"
                 android:id="@+id/serverView" />
             </ScrollView>
@@ -32,6 +33,13 @@
             android:layout_height="fill_parent"
             android:text="@string/button_channel_chat"
             android:id="@+id/showChannelChat" />
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Test"
+            android:id="@+id/button2"
+            android:onClick="TestButton" />
     </LinearLayout>
 
     <ScrollView
