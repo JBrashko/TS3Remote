@@ -154,11 +154,17 @@ public class DisplayServerActivity extends Activity  implements RemoteUserInterf
         {
             returnMsg="Connection failed";
         }
-       /* TabHost tabs = (TabHost) findViewById(R.id.tabHost) ;
+        TabHost tabs = (TabHost) findViewById(R.id.tabHost) ;
         tabs.setup();
+        TabHost.TabSpec ServerChatSpec = tabs.newTabSpec("Server");
+        ServerChatSpec.setIndicator("Server chat");
+        ServerChatSpec.setContent(R.id.ServerChatContent);
+        tabs.addTab(ServerChatSpec);
         TabHost.TabSpec channelChatSpec = tabs.newTabSpec("Channel");
+        channelChatSpec.setIndicator("Channel chat");
+        channelChatSpec.setContent(R.id.ChannelChatContent);
         tabs.addTab(channelChatSpec);
-        tabs.setCurrentTab(0);*/
+        tabs.setCurrentTabByTag("Channel");
     }
 
     @Override
@@ -222,24 +228,27 @@ public class DisplayServerActivity extends Activity  implements RemoteUserInterf
         }
    }
     private void ShowChatMessage(Message msg)throws Exception{
-    /*ServerConnection sc = currentClient.getSCHandler((msg.arg1));
-    TextView serverChat = (TextView) findViewById(R.id.serverChatView);
-    serverChat.setText(sc.getServerChat());
-    TextView channelChat = (TextView) findViewById(R.id.channelChatView);
-    channelChat.setText(sc.getChannelChat());*/
+    ServerConnection sc = networkInterface.getSCHandler((msg.arg1));
+    //TextView serverChat = (TextView) findViewById(R.id.serverChatView);
+    //serverChat.setText(sc.getServerChat());
+    //TextView channelChat = (TextView) findViewById(R.id.channelChatView);
+    //channelChat.setText(sc.getChannelChat());*/
         TextView Chat = (TextView) findViewById(R.id.ChatTextView);
-        Chat.append("New chat message received."+"\r\n");
+       // Chat.append("New chat message received."+"\r\n");
+       sc.getChannelChat();
         switch (msg.arg2){//arg2 is the chat type
             case 1://private message
 
             break;
             case 2://channel chat
-
-            //Chat.setText(sc.getChannelChat());
+            TextView ChannelChat = (TextView) findViewById(R.id.ChannelChat);
+                ChannelChat.setText(sc.getChannelChat());
+            Chat.setText(sc.getChannelChat());
             break;
             case 3://server chat
-
-            //Chat.setText(sc.getServerChat());
+                TextView ServerChat = (TextView) findViewById(R.id.ServerChat);
+                ServerChat.setText(sc.getServerChat());
+            Chat.setText(sc.getServerChat());
             break;
 
         }
