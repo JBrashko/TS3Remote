@@ -1,6 +1,5 @@
 package meliarion.ts3.ts3remote;
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.net.ConnectivityManager;
@@ -9,6 +8,9 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentActivity;
+import android.support.v4.app.FragmentManager;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
@@ -17,11 +19,15 @@ import android.widget.EditText;
 import android.widget.TabHost;
 import android.widget.TextView;
 
+import java.util.HashMap;
+import java.util.List;
+
 /**
  * Created by Meliarion on 05/06/13.
  * Activity which handles the UI for the teamspeak remote
  */
-public class DisplayServerActivity extends Activity  implements RemoteUserInterface {
+public class DisplayServerActivity extends FragmentActivity implements RemoteUserInterface, ChatFragment.OnFragmentInteractionListener {
+    private PersistantFragmentTabHost mTabHost;
     private ClientConnectionInterface networkInterface;
     private Thread networkThread;
     private int rec = 0;
@@ -67,7 +73,16 @@ public class DisplayServerActivity extends Activity  implements RemoteUserInterf
                 origin = "Unknown origin";
                 break;
             }
-        String text = (String)msg.obj;
+
+                String text;
+                if (msg.obj.getClass() == String.class) {
+                    text = (String) msg.obj;
+                } else if (msg.obj.getClass() == HashMap.class) {
+                    text = (String) (((HashMap) msg.obj).get("type"));
+                } else {
+                    text = "Message object is not a valid class type. Object type is: " + msg.obj.getClass().getName();
+                    Log.e("DisplayServerActivity", text);
+                }
 //            String message = origin+": "+text;//textView.getText().toString().trim();
                 Log.d("MessageHandler","Message of type "+origin+" received : "+text);
 
@@ -152,21 +167,30 @@ public class DisplayServerActivity extends Activity  implements RemoteUserInterf
         }
          else
         {
-            returnMsg="Connection failed";
+            Log.e("DisplayServerActivity", "Connection failed");
         }
-        TabHost tabs = (TabHost) findViewById(R.id.tabHost) ;
-        tabs.setup();
-        TabHost.TabSpec ServerChatSpec = tabs.newTabSpec("Server");
-        ServerChatSpec.setIndicator("Server chat");
-        ServerChatSpec.setContent(R.id.ServerChatContent);
-        tabs.addTab(ServerChatSpec);
-        TabHost.TabSpec channelChatSpec = tabs.newTabSpec("Channel");
-        channelChatSpec.setIndicator("Channel chat");
-        channelChatSpec.setContent(R.id.ChannelChatContent);
-        tabs.addTab(channelChatSpec);
-        tabs.setCurrentTabByTag("Channel");
+        //Tab setup
+        addChatTab("serverChat", "Server Chat");
+        addChatTab("channelChat", "Channel Chat");
     }
 
+    private void addChatTab(String tag, String label) {
+        mTabHost = (PersistantFragmentTabHost) findViewById(R.id.fragChatTabhost);
+        mTabHost.setup(this, getSupportFragmentManager(), android.R.id.tabcontent);
+        TabHost.TabSpec tabChat = mTabHost.newTabSpec(tag);
+        tabChat.setIndicator(label, null);
+        mTabHost.addTab(tabChat, ChatFragment.class, null);
+    }
+
+    private void addChatTab(String tag, String label, String content) {
+        Bundle bundle = new Bundle();
+        bundle.putString("content", content);
+        mTabHost = (PersistantFragmentTabHost) findViewById(R.id.fragChatTabhost);
+        mTabHost.setup(this, getSupportFragmentManager(), android.R.id.tabcontent);
+        TabHost.TabSpec tabChat = mTabHost.newTabSpec(tag);
+        tabChat.setIndicator(label, null);
+        mTabHost.addTab(tabChat, ChatFragment.class, bundle);
+    }
     @Override
     protected void onStop() {
         super.onStop();
@@ -212,8 +236,18 @@ public class DisplayServerActivity extends Activity  implements RemoteUserInterf
     }
     public void TestButton (View view)
     {
-        TSServerView serverView = (TSServerView) findViewById(R.id.serverView);
-        serverView.refresh();
+        // TSServerView serverView = (TSServerView) findViewById(R.id.serverView);
+        // serverView.refresh();
+        try {
+            FragmentManager manager = getSupportFragmentManager();
+            TextView Chat = (TextView) findViewById(R.id.ChatTextView);
+            ChatFragment as = (ChatFragment) manager.findFragmentByTag("serverChat");
+            View v = as.getView();
+            TextView f = (TextView) v.findViewById(R.id.chat);
+            Chat.append(f.getText());
+        } catch (NullPointerException ex) {
+            Log.e("DisplayServerActivity", "An error occoured when the test button was clicked", ex);
+        }
     }
 
     public void SendMessage (View view){
@@ -234,24 +268,70 @@ public class DisplayServerActivity extends Activity  implements RemoteUserInterf
     //TextView channelChat = (TextView) findViewById(R.id.channelChatView);
     //channelChat.setText(sc.getChannelChat());*/
         TextView Chat = (TextView) findViewById(R.id.ChatTextView);
-       // Chat.append("New chat message received."+"\r\n");
-       sc.getChannelChat();
+        FragmentManager manager = getSupportFragmentManager();
+
+        int a = mTabHost.getChildCount();
+        List<Fragment> s = manager.getFragments();
+        for (Fragment f : s) {
+            Chat.append(f.getId() + ":" + f.getTag() + ":" + f.getView().findViewById(R.id.chat).getId() + "\r\n");
+
+        }
+
+        Chat.append("New chat message received." + a + ":" + s.size() + "\r\n");
         switch (msg.arg2){//arg2 is the chat type
             case 1://private message
+                Log.w("DisplayServerActivity", "Private message recieved");
+                HashMap<String, String> params = (HashMap) msg.obj;
+                int clientID = sc.getClientID();
+                int invokerID = Integer.parseInt(params.get("invokerid"));
+                int targetID = Integer.parseInt(params.get("target"));
+                if (clientID == invokerID) {
+                    TSClient client = sc.getClientByCLID(targetID);
+                    String tag = targetID + "Chat";
+                    Fragment f = manager.findFragmentByTag(tag);
+                    if (f == null) {
+                        addChatTab(tag, client.getName(), sc.getPrivateChat(targetID));
+                        mTabHost.setCurrentTabByTag(tag);
+                    } else {
+                        ChatFragment chatFragment = (ChatFragment) f;
+                        chatFragment.setChat(sc.getPrivateChat(targetID));
+                    }
+                } else if (clientID == targetID) {
+                    TSClient client = sc.getClientByCLID(invokerID);
+                    String tag = invokerID + "Chat";
+                    Fragment f = manager.findFragmentByTag(invokerID + "Chat");
+                    if (f == null) {
+                        addChatTab(tag, client.getName(), sc.getPrivateChat(invokerID));
+                        mTabHost.setCurrentTabByTag(tag);
+                    } else {
+                        ChatFragment chatFragment = (ChatFragment) f;
+                        chatFragment.setChat(sc.getPrivateChat(invokerID));
+                    }
+                } else {
+                    Log.e("DisplayServerActivity", "Invalid private message recieved");
+                }
 
             break;
             case 2://channel chat
-            TextView ChannelChat = (TextView) findViewById(R.id.ChannelChat);
-                ChannelChat.setText(sc.getChannelChat());
-            Chat.setText(sc.getChannelChat());
+                // TextView ChannelChat = (TextView) findViewById(R.id.ChannelChat);
+                //    ChannelChat.setText(sc.getChannelChat());
+                ChatFragment Cchat = (ChatFragment) manager.findFragmentByTag("channelChat");
+                Cchat.setChat(sc.getChannelChat());
+                //Chat.setText(sc.getChannelChat());
             break;
             case 3://server chat
-                TextView ServerChat = (TextView) findViewById(R.id.ServerChat);
-                ServerChat.setText(sc.getServerChat());
-            Chat.setText(sc.getServerChat());
+                //  TextView ServerChat = (TextView) findViewById(R.id.ServerChat);
+                //ServerChat.setText(sc.getServerChat());
+                ChatFragment Schat = (ChatFragment) manager.findFragmentByTag("serverChat");
+                Schat.setChat(sc.getServerChat());
+                // Chat.setText(sc.getServerChat());
             break;
 
         }
     }
 
+    @Override
+    public void onChatMessageSend(String message) {
+
+    }
 }

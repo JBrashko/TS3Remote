@@ -3,6 +3,7 @@ package meliarion.ts3.ts3remote;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.View;
 import android.widget.CheckBox;
@@ -44,6 +45,7 @@ public class LauncherActivity extends Activity {
         }
      catch (NullPointerException ex)
         {
+            Log.e("LauncherActivity", "Failed to connect to server: ", ex);
 
         }
     }
@@ -69,7 +71,6 @@ public class LauncherActivity extends Activity {
         {
             type = ClientConnectionType.DirectNetwork;
         }
-
         Intent intent = new Intent(this, DisplayServerActivity.class);
         intent.putExtra(CLIENT_IP, target);
         intent.putExtra(CONNECTION_TYPE,type.showCode());

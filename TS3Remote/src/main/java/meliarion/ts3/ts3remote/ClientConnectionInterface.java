@@ -5,6 +5,7 @@ package meliarion.ts3.ts3remote;
  * Interface to abstract the TS3 client connection
  */
 public interface ClientConnectionInterface {
-    public ServerConnection getSCHandler(int SCID)throws TSRemoteException;
-    public void SendCQMessage(String message);
+    ServerConnection getSCHandler(int SCID) throws TSRemoteException;
+
+    void SendCQMessage(String message);
 }

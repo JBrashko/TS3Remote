@@ -403,13 +403,14 @@ public class TSChannel implements Comparable<TSChannel>{
         }
     }
 
-    public static enum ChannelType {
+    public enum ChannelType {
         TemporaryChannel,
         SemiPermanentChannel,
         PermanentChannel,
         ServerTopLevel
     }
-    public static enum CodecType{
+
+    public enum CodecType {
         INVALID_CODEC (-1),
         CODEC_SPEEX_NARROWBAND (0),
         CODEC_SPEEX_WIDEBAND (1),

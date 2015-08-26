@@ -34,6 +34,7 @@ import java.util.regex.Pattern;
     private boolean channelCommander;
     private boolean localMuted;
     private boolean whispering = false;
+    private List<ChatMessage> PrivateChat = null;
     private String AwayMsg;
     private List<Integer> serverGroupsID = new ArrayList<Integer>();
     private int channelGroupID;
@@ -413,7 +414,8 @@ import java.util.regex.Pattern;
     public String getCountry(){
         return this.country;
     }
-    public static enum ClientType {
+
+    public enum ClientType {
         InvalidClient (-1),
         NormalClient (0),
         ServerQueryClient (1);
@@ -437,5 +439,16 @@ import java.util.regex.Pattern;
             return InvalidClient;
         }
         }
+    }
+
+    public void addPrivateChatMessage(ChatMessage message) {
+        if (PrivateChat == null) {
+            PrivateChat = new ArrayList<ChatMessage>();
+        }
+        PrivateChat.add(message);
+    }
+
+    public List<ChatMessage> getPrivateChat() {
+        return PrivateChat;
     }
 }

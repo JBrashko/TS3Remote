@@ -222,7 +222,7 @@ public class TS3ClientConnection implements Runnable, ClientConnectionInterface 
     }
     private boolean EstablishedConnection(String receivedLine) throws Exception
     {
-        Log.i("Meliarion.TS3.TS3Remote.CQMessage", receivedLine);
+        Log.i("TS3ClientConnection", receivedLine);
         UI.Received(receivedLine);
         Matcher match = response.matcher(receivedLine);
         if(match.find()){
@@ -404,7 +404,7 @@ public class TS3ClientConnection implements Runnable, ClientConnectionInterface 
         }
     }
     private void ManageError(Integer code, String message) throws ClientQueryMessageException{
-        Log.e("Meliarion.TS3.TS3Remote.CQMessage","server connection error id="+code+" with message="+message);
+        Log.e("CQMessage", "server connection error id=" + code + " with message=" + message);
         switch (code)
         {
             case 0:
@@ -553,8 +553,16 @@ public class TS3ClientConnection implements Runnable, ClientConnectionInterface 
         }else if (type.equals("notifytextmessage")){
             int mtype = Integer.valueOf(params.get("targetmode"));
             String s = params.get("msg");
-            server.AddTextMessage(s,mtype,params.get("invokername"),params.get("invokeruid"));
-            Message msg =  mHandler.obtainMessage(TSMessageType.ChatMessage.showCode(),server.getID(),mtype,"New chat message received ");
+            Message msg;
+            if (mtype == 1) {
+                server.AddTextMessage(s, mtype, params.get("invokername"), params.get("invokeruid"), Integer.parseInt(params.get("invokerid")), Integer.parseInt(params.get("target")));
+                params.put("type", "New chat message received ");
+                msg = mHandler.obtainMessage(TSMessageType.ChatMessage.showCode(), server.getID(), mtype, params);
+            } else {
+                server.AddTextMessage(s, mtype, params.get("invokername"), params.get("invokeruid"), Integer.parseInt(params.get("invokerid")));
+                msg = mHandler.obtainMessage(TSMessageType.ChatMessage.showCode(), server.getID(), mtype, "New chat message received ");
+            }
+
             msg.sendToTarget();
 
         }else if (type.equals("notifyservergrouplist"))

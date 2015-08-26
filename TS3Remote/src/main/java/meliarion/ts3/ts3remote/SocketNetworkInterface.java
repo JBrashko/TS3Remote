@@ -80,11 +80,7 @@ public class SocketNetworkInterface implements NetworkInterface {
         if (m.matches()){
             connectInfo[0]=m.group(1);
             connectInfo[1] = m.group(2);
-            if(!m.group(3).equals("error id=0 msg=ok"))
-            {
-                return false;
-            }
-            return true;
+            return m.group(3).equals("error id=0 msg=ok");
         }
         else {
             return false;

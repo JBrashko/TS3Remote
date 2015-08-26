@@ -2,7 +2,9 @@ package meliarion.ts3.ts3remote;
 
 import android.util.Log;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -16,8 +18,12 @@ import java.util.regex.Pattern;
  */
 public class ServerConnection {
     private String Name="Unknown server";
-    private String ServerChat="";
-    private String ChannelChat="";
+    private String OldServerChat = "";
+    private List<ChatMessage> ServerChat = new ArrayList<ChatMessage>();
+    private String OldChannelChat = "";
+    private List<ChatMessage> ChannelChat = new ArrayList<ChatMessage>();
+    String OldPrivateChat = "";
+    private List<ChatMessage> PrivateChat = new ArrayList<ChatMessage>();
     private boolean ChannelsReceived = false;
     private boolean ConnectionTested = false;
     private boolean ConnectionVerified =false;
@@ -73,7 +79,7 @@ public class ServerConnection {
     }*/
     private void initialiseChannels(){
         this.ChannelList.add(new TSChannel(0,-1,"Server top level",TSChannel.ChannelType.ServerTopLevel));
-        this.ChannelMap.put(0,0);
+        this.ChannelMap.put(0, 0);
     }
    /* public void advanceConnectionStage(){
         switch (stage){
@@ -122,6 +128,10 @@ public class ServerConnection {
     public int getID(){
         return  id;
     }
+
+    public int getClientID() {
+        return clientID;
+    }
     public ConnectionStage getStage(){
         boolean b = hasChannels()&&(unprocessedChannels.size()==0)&&(ChannelList.get(0).getSubchannelIDs().size()>0);
         if(ConnectionTested&&!ChannelsReceived&&!ConnectionVerified&&!ClientsReceived &&!hasServerGroups()&&!hasChannelGroups())
@@ -162,11 +172,19 @@ public class ServerConnection {
         }
 
     }
-    private void AddServerMessage(String message, String sender, String senderUID){
-        ServerChat+=sender+":"+message+System.getProperty("line.separator");
+
+    private void AddServerMessage(String message, String sender, String senderUID, int senderID) {
+        OldServerChat += sender + ":" + message + System.getProperty("line.separator");
+        Calendar now = Calendar.getInstance();
+        ChatMessage newMessage = new ChatMessage(unmakeTransmitSafe(message), senderID, now.getTimeInMillis());
+        ServerChat.add(newMessage);
     }
-    private void AddChannelMessage(String message, String sender, String senderUID){
-        ChannelChat+=sender+":"+message+System.getProperty("line.separator");
+
+    private void AddChannelMessage(String message, String sender, String senderUID, int senderID) {
+        OldChannelChat += sender + ":" + message + System.getProperty("line.separator");
+        Calendar now = Calendar.getInstance();
+        ChatMessage newMessage = new ChatMessage(unmakeTransmitSafe(message), senderID, now.getTimeInMillis());
+        ChannelChat.add(newMessage);
     }
     public boolean isConnected(){
         ConnectionStage stage = getStage();
@@ -203,7 +221,6 @@ public class ServerConnection {
     public boolean hasChannelGroups(){
         return (ChannelGroupList.size()>0);
     }
-
     public boolean hasClients(){
         return (ClientList.size()>0);
     }
@@ -215,33 +232,110 @@ public class ServerConnection {
         ConnectionVerified = true;
         ConnectionTested = true;
     }
-    public void AddTextMessage(String message, int type, String sender, String senderUID){
+
+    public void AddTextMessage(String message, int type, String sender, String senderUID, int senderID) throws SCNotFoundException {
         switch (type){
             case 0:
-            break;
+            default:
             case 1:
-            AddPrivateMessage(message,sender,senderUID);
+                Log.e("ServerConnection", "Invalid chat message");
             break;
             case 2:
-            AddChannelMessage(message,sender,senderUID);
+                AddChannelMessage(message, sender, senderUID, senderID);
             break;
             case 3:
-            AddServerMessage(message,sender,senderUID);
+                AddServerMessage(message, sender, senderUID, senderID);
             break;
         }
     }
 
-    private void AddPrivateMessage(String message, String sender, String senderUID) {
+    public void AddTextMessage(String message, int type, String sender, String senderUID, int senderID, int target) throws SCNotFoundException {
+        switch (type) {
+            case 1:
+                AddPrivateMessage(message, sender, senderUID, senderID, target);
+                break;
+            default:
+                AddTextMessage(message, type, sender, senderUID, senderID);
+                break;
+        }
 
     }
 
-    public String getServerChat(){
-        return  unmakeTransmitSafe(ServerChat);
+    private void AddPrivateMessage(String message, String sender, String senderUID, int senderID, int target) throws SCNotFoundException {
+        OldPrivateChat += sender + ":" + message + System.getProperty("line.separator");
+        Calendar now = Calendar.getInstance();
+        ChatMessage newMessage = new ChatMessage(message, senderID, now.getTimeInMillis());
+        PrivateChat.add(newMessage);
+        if (senderID == clientID) {
+            TSClient TargetClient = getClientByCLID(target);
+            TargetClient.addPrivateChatMessage(newMessage);
+        } else if (target == clientID) {
+            TSClient SenderClient = getClientByCLID(senderID);
+            SenderClient.addPrivateChatMessage(newMessage);
+        } else {
+            Log.e("ServerConnection", "Invalid private message recieved.");
+        }
     }
 
-    public String getChannelChat()
-    {   return unmakeTransmitSafe(ChannelChat);
+    public String getServerChat() {
+        try {
+            String result = "";
 
+
+            for (ChatMessage chat : ServerChat) {
+                result += makeChatString(chat);
+            }
+            return result;//unmakeTransmitSafe(OldServerChat);
+        } catch (SCNotFoundException ex) {
+            String s = "Error retrieving server chat";
+            Log.e("ServerConnection", s, ex);
+            return s;
+    }
+    }
+
+    private String makeChatString(ChatMessage message) throws SCNotFoundException {
+        Calendar c = Calendar.getInstance();
+        SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
+        c.setTimeInMillis(message.getTimestap());
+        String tmp = "<" + sdf.format(c.getTime()) + ">"; //c.get(Calendar.HOUR_OF_DAY)+":"+c.get(Calendar.MINUTE)+":"+c.get(Calendar.SECOND)+"> ";
+        TSClient client = getClientByCLID(message.getSender());
+        tmp += '"' + client.getName() + '"';
+        tmp += ": " + message.getMessage() + System.getProperty("line.separator");
+        return tmp;
+    }
+
+    public String getChannelChat() {   //return unmakeTransmitSafe(OldChannelChat);
+        try {
+            String result = "";
+
+
+            for (ChatMessage chat : ChannelChat) {
+                result += makeChatString(chat);
+            }
+            return result;
+        } catch (SCNotFoundException ex) {
+            String s = "Error retrieving server chat";
+            Log.e("ChannelConnection", s, ex);
+            return s;
+        }
+    }
+
+    public String getPrivateChat(int clid) {
+
+        try {
+            String result = "";
+            TSClient client = getClientByCLID(clid);
+
+
+            for (ChatMessage chat : client.getPrivateChat()) {
+                result += makeChatString(chat);
+            }
+            return result;
+        } catch (SCNotFoundException ex) {
+            String s = "Error retrieving private chat for client " + clid;
+            Log.e("ChannelConnection", s, ex);
+            return s;
+        }
     }
     public int getChannelCount(){
         return ChannelList.size();
@@ -258,7 +352,7 @@ public class ServerConnection {
             ChannelToClientMap.put(client.getChannelID(),cList = new ArrayList<Integer>());
         }
         cList.add(client.getClientID());
-        Collections.sort(cList,new ClientOrderer(this));
+        Collections.sort(cList, new ClientOrderer(this));
     }
     public void AddClient(Map<String,String> params)
     {TSClient client = new TSClient(params);
@@ -345,7 +439,7 @@ public class ServerConnection {
         }
         catch (SCException ex)
         {
-            unprocessedChannels.add(Integer.valueOf(id));
+            unprocessedChannels.add(id);
         }
 
     }
@@ -359,7 +453,7 @@ public class ServerConnection {
             }
             catch (Exception e)
             {
-                Log.e("ServerConnection","Failed to process channel: "+e);
+                Log.e("ServerConnection", "Failed to process channel: ", e);
             }
         }
         unprocessedChannels.clear();
@@ -402,25 +496,25 @@ public class ServerConnection {
             TSClient client = getClientByCLID(clid);
             ChannelToClientMap.get(client.getChannelID()).remove(Integer.valueOf(clid));
             //ClientList.remove(client);
-            ClientMap.remove(Integer.valueOf(clid));
+        ClientMap.remove(clid);
 
     }
     public void removeChannelByID(int cid) throws SCNotFoundException {
         TSChannel channel = getChannelByID(cid);
-        ChannelToClientMap.remove(Integer.valueOf(cid));
+        ChannelToClientMap.remove(cid);
         ChannelList.remove(channel);
-        ChannelMap.remove(Integer.valueOf(cid));
+        ChannelMap.remove(cid);
 
     }
     public void removeServerGroupByID(int sgid) throws SCNotFoundException {
         TSGroup sGroup = getServerGroupByID(sgid);
         ServerGroupList.remove(sGroup);
-        ServerGroupMap.remove(Integer.valueOf(sgid));
+        ServerGroupMap.remove(sgid);
     }
     public void removeChannelGroupByID(int cgid) throws SCNotFoundException {
         TSGroup cGroup = getChannelGroupByID(cgid);
         ChannelGroupList.remove(cGroup);
-        ChannelGroupMap.remove(Integer.valueOf(cgid));
+        ChannelGroupMap.remove(cgid);
 
     }
     public TSClient getClientByCLID(int clientID) throws SCNotFoundException
@@ -459,7 +553,7 @@ public class ServerConnection {
     }
     public TSGroup getChannelGroupByID(int ID) throws SCNotFoundException {
         try {
-            int index = ChannelGroupMap.get(Integer.valueOf(ID));
+            int index = ChannelGroupMap.get(ID);
             if (index != -1)
             {
                 return ChannelGroupList.get(index);
@@ -479,7 +573,7 @@ public class ServerConnection {
     }
     public TSChannel getChannelByID(int ID) throws SCNotFoundException {
          try{
-            int index = ChannelMap.get(Integer.valueOf(ID));
+             int index = ChannelMap.get(ID);
             if (index != -1){
              return ChannelList.get(index);
             }
@@ -505,7 +599,7 @@ public class ServerConnection {
         client.moveClient(params);
         List<Integer> cList= ChannelToClientMap.get(client.getChannelID());
         if(cList==null){
-            ChannelToClientMap.put(client.getChannelID(),cList = new ArrayList<Integer>());
+            ChannelToClientMap.put(client.getChannelID(), cList = new ArrayList<Integer>());
         }
         cList.add(client.getClientID());
     }
@@ -883,6 +977,7 @@ public class ServerConnection {
         Log.w("ServerConnection","UpdateConnectionInfo response received :"+response);
     }
 
+
     public static class SCException extends Exception
     { private String errorDescription;
       private SCExceptionType type;
@@ -927,13 +1022,15 @@ public class ServerConnection {
             return SCExceptionType.ItemNotFound;
         }
     }
-    public static enum ItemNotFoundType {
+
+    public enum ItemNotFoundType {
         Client,
         Channel,
         ChannelGroup,
         ServerGroup
     }
-    public static enum SCExceptionType {
+
+    public enum SCExceptionType {
         ItemNotFound,
         DataBlockParseFailed
 

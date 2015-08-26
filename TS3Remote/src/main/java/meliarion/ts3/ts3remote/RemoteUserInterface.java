@@ -8,7 +8,7 @@ import android.os.Handler;
  */
 public interface RemoteUserInterface {
 
-    public void Received(String data);
+    void Received(String data);
 
-    public Handler getHandler();
+    Handler getHandler();
 }
