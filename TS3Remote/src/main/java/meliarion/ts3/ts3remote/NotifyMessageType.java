@@ -8,6 +8,7 @@ import java.util.Map;
  * Created by James on 28/08/2015.
  */
 public enum NotifyMessageType {
+    invalid("invalid"),
     selected("selected"),
     notifytalkstatuschange("notifytalkstatuschange"),
     notifytextmessage("notifytextmessage"),
@@ -65,6 +66,10 @@ public enum NotifyMessageType {
     }
 
     public static NotifyMessageType getNotifyMessageType(String type) {
-        return Lookup.get(type);
+        if (Lookup.containsKey(type)) {
+            return Lookup.get(type);
+        }
+        return invalid;
+
     }
 }

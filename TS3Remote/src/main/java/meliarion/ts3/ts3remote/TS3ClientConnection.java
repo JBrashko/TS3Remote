@@ -478,7 +478,7 @@ public class TS3ClientConnection implements Runnable, ClientConnectionInterface 
     }
     private boolean AddSCHandler(int _scid) {
     ServerConnection connection = new ServerConnection(_scid);
-    Log.i("SCHandler","Adding SCHandler id:"+_scid+" to list");
+        Log.i("SCHandler", "Adding SCHandler id:" + _scid + " to list");
     return SCHandlers.add(connection);
     }
     private void notifyResponce (String type, int scid, String parameters) throws Exception{
@@ -504,7 +504,7 @@ public class TS3ClientConnection implements Runnable, ClientConnectionInterface 
              params.put(mparams.group(1),mparams.group(2));
             }
          }
-         Log.d("Notify","Notify message of "+type+" received");
+        Log.d("Notify", "Notify message of " + type + " received");
          try {
          ServerConnection server = getSCHandler(scid);
          handleNotify(type,server,params);
@@ -531,20 +531,93 @@ public class TS3ClientConnection implements Runnable, ClientConnectionInterface 
     }
 
 
-
-    private void handleNotify(String type, ServerConnection server, Map<String, String> params)throws Exception{
+    private void handleNotify(String type, ServerConnection server, Map<String, String> params) throws Exception {
         NotifyMessageType notifyMessageType = NotifyMessageType.getNotifyMessageType(type);
         switch (notifyMessageType) {
-
+            case selected:
+                UsedSCHandlerIndex = SCHandlers.indexOf(getSCHandler(server.getID()));
+                break;
+            case notifytalkstatuschange:
+                handleNotifyTalkStatusChange(server, params);
+                break;
+            case notifytextmessage:
+                handleNotifyTextMessage(server, params);
+                break;
+            case notifyservergrouplist:
+                handleNotifyServergroupList(server, params);
+                break;
+            case notifychannelgrouplist:
+                handleNotifyChannelGroupList(server, params);
+                break;
+            case notifyclientupdated:
+                handleNotifyClientUpdated(server, params);
+                break;
+            case notifyclientmoved:
+                handleNotifyClientMoved(server, params);
+                break;
+            case notifyclientchannelgroupchanged:
+                handleNotifyClientChannelGroupChanged(server, params);
+                break;
+            case notifycurrentserverconnectionchanged:
+                handleNotifyCurrentServerConnectionChanged(server);
+                break;
+            case notifyclientleftview:
+                handleNotifyClientLeftView(server, params);
+                break;
+            case notifycliententerview:
+                handleNotifyClientEnterView(server, params);
+                break;
+            case notifychannelcreated:
+                handleNotifyChannelCreated(server, params);
+                break;
+            case notifychanneledited:
+                handleNotifyChannelEdited(server, params);
+                break;
+            case notifyserverupdated:
+                handleNotifyServerUpdated(server, params);
+                break;
+            case notifyconnectstatuschange:
+                handleNotifyConnectStatusChange(server, params);
+                break;
+            case channellist:
+                handleChannelList(server, params);
+                break;
+            case notifychanneldeleted:
+                handleNotifyChannelDeleted(server, params);
+                break;
+            case notifychannelsubscribed:
+                handleNotifyChannelSubscribed(server, params);
+                break;
+            case notifychannelmoved:
+                handleNotifyChannelMoved(server, params);
+                break;
+            case notifychannelpasswordchanged:
+                handleNotifyChannelPasswordChanged(server, params);
+                break;
+            case notifyserveredited:
+                handleNotifyServerEdited(server, params);
+                break;
+            case notifyfilelist:
+            case notifyfilelistfinished:
+            case notifyservergroupclientadded:
+            case notifychannelunsubscribed:
+            case notifyclientneededpermissions:
+            case notifychannelpermlist:
+            case notifyservergrouppermlist:
+            case notifychanneldescriptionchanged:
+            case notifystartdownload:
+            case notifymutedclientdisconnected:
+                Log.i("Notify", "Unused notify type:" + type);
+                break;
+            default:
+                Log.w("Notify", "Unhandled notify type:" + type);
+                break;
         }
-        if (type.equals("selected"))
-        {
-            UsedSCHandlerIndex = SCHandlers.indexOf(getSCHandler(server.getID()));
+    }
 
-        }
-        else if (type.equals("notifytalkstatuschange")){
+    private void handleNotifyTalkStatusChange(ServerConnection server, Map<String, String> params) {
             int clid=Integer.valueOf(params.get("clid"));
-            try{
+        try {
             server.getClientByCLID(clid).SetTalkStatus(params.get("status").equals("1"), params.get("isreceivedwhisper").equals("1"));
             Message msg = mHandler.obtainMessage(TSMessageType.ClientAltered.showCode(),server.getID(),clid,"Client status changed");
             msg.sendToTarget();
@@ -554,9 +627,11 @@ public class TS3ClientConnection implements Runnable, ClientConnectionInterface 
                 Log.e("Notify","Failed to update client talk status, clid:"+clid+". "+ex.getErrorDescription(), ex);
             }
 
-        }else if (type.equals("notifytextmessage")){
-            int mtype = Integer.valueOf(params.get("targetmode"));
-            String s = params.get("msg");
+    }
+
+    private void handleNotifyTextMessage(ServerConnection server, Map<String, String> params) throws ServerConnection.SCNotFoundException {
+        int mtype = Integer.valueOf(params.get("targetmode"));
+        String s = params.get("msg");
             Message msg;
             if (mtype == 1) {
                 server.AddTextMessage(s, mtype, params.get("invokername"), params.get("invokeruid"), Integer.parseInt(params.get("invokerid")), Integer.parseInt(params.get("target")));
@@ -567,10 +642,11 @@ public class TS3ClientConnection implements Runnable, ClientConnectionInterface 
                 msg = mHandler.obtainMessage(TSMessageType.ChatMessage.showCode(), server.getID(), mtype, "New chat message received ");
             }
 
-            msg.sendToTarget();
+        msg.sendToTarget();
 
-        }else if (type.equals("notifyservergrouplist"))
-        {
+    }
+
+    private void handleNotifyServergroupList(ServerConnection server, Map<String, String> params) throws TSRemoteException {
         Set<String> keys = params.keySet();
         Iterator<String> iterKeys = keys.iterator();
         Map<String,String> grpMap = new HashMap<String, String>();
@@ -599,8 +675,9 @@ public class TS3ClientConnection implements Runnable, ClientConnectionInterface 
             //group=new TSGroup(grpMap);
             server.AddServerGroupByParams(grpMap);
         }
-        else if (type.equals("notifychannelgrouplist"))
-        {   int i = 0;
+
+    private void handleNotifyChannelGroupList(ServerConnection server, Map<String, String> params) {
+        int i = 0;
             if (server.hasChannelGroups()){
                 server.ClearChannelGroups();
             }
@@ -615,13 +692,14 @@ public class TS3ClientConnection implements Runnable, ClientConnectionInterface 
                 i++;
             }
         }
-        else if (type.equals("notifyclientupdated"))
-        { int clid=Integer.valueOf(params.get("clid"));
+
+    private void handleNotifyClientUpdated(ServerConnection server, Map<String, String> params) {
+        int clid = Integer.valueOf(params.get("clid"));
             try{
 
             TSClient client = server.getClientByCLID(clid);
             boolean needresort = params.containsKey("client_talk_power")||params.containsKey("client_nickname")||params.containsKey("client_is_talker");
-            client.updateClient(params);
+                client.updateClient(params);
             if(needresort){
                  server.sortChannelClients(client.getChannelID());
             }
@@ -634,11 +712,12 @@ public class TS3ClientConnection implements Runnable, ClientConnectionInterface 
             }
 
         }
-        else if(type.equals("notifyclientmoved"))
-        {   int clid=Integer.valueOf(params.get("clid"));
+
+    private void handleNotifyClientMoved(ServerConnection server, Map<String, String> params) {
+        int clid = Integer.valueOf(params.get("clid"));
 
             try{
-            server.moveClient(clid, params);
+                server.moveClient(clid, params);
             Message msg = mHandler.obtainMessage(TSMessageType.ClientMoved.showCode(),server.getID(),clid,"Client moved");
             msg.sendToTarget();
             }
@@ -647,13 +726,13 @@ public class TS3ClientConnection implements Runnable, ClientConnectionInterface 
                 Log.e("Notify","Failed to move client clid:"+clid+". "+ex.getErrorDescription(), ex);
             }
         }
-        else if(type.equals("notifyclientchannelgroupchanged"))
-        {
+
+    private void handleNotifyClientChannelGroupChanged(ServerConnection server, Map<String, String> params) {
             int cgid = Integer.valueOf(params.get("cgid"));
             int cid = Integer.valueOf(params.get("cid"));
-            int clid = Integer.valueOf(params.get("clid"));
+        int clid = Integer.valueOf(params.get("clid"));
             try{
-                server.getClientByCLID(clid).changeChannelGroup(cgid,cid);
+                server.getClientByCLID(clid).changeChannelGroup(cgid, cid);
                 Message msg = mHandler.obtainMessage(TSMessageType.ClientAltered.showCode(),server.getID(),clid,"Client channel group changed");
                 msg.sendToTarget();
                 }
@@ -662,239 +741,182 @@ public class TS3ClientConnection implements Runnable, ClientConnectionInterface 
                 Log.e("Notify","Failed to change client channel group. "+ex.getErrorDescription(), ex);
             }
         }
-        else if(type.equals("notifycurrentserverconnectionchanged"))
-        {
-            DisplayedSCHandler = server.getID();
-            Message msg = mHandler.obtainMessage(TSMessageType.DisplayedServerConnectionChange.showCode(),server.getID(),0,"Displayed server connection changed");
-            msg.sendToTarget();
-        }
-        else if(type.equals("notifyservergroupclientadded"))
-        {
-            Log.i("Notify","Unused notify type:"+type);
-          //  int clid = Integer.valueOf(params.get("clid"));
-          //  int sgid = Integer.valueOf(params.get("sgid"));
-          //  getSchandler(scid).getClientByCLID(clid).addServerGroup(sgid);
-          //  Message msg = mHandler.obtainMessage(TSMessageType.ClientAltered.showCode(),scid,clid,"Client server group changed");
-          //  msg.sendToTarget();
-        }
-        else if(type.equals("notifyclientleftview"))
-        {
-            int clid = Integer.valueOf(params.get("clid"));
-            try{
+
+    private void handleNotifyCurrentServerConnectionChanged(ServerConnection server) {
+        DisplayedSCHandler = server.getID();
+        Message msg = mHandler.obtainMessage(TSMessageType.DisplayedServerConnectionChange.showCode(), server.getID(), 0, "Displayed server connection changed");
+        msg.sendToTarget();
+    }
+
+    private void handleNotifyClientLeftView(ServerConnection server, Map<String, String> params) {
+        int clid = Integer.valueOf(params.get("clid"));
+        try {
             server.removeClientByCLID(clid);
-            Message msg = mHandler.obtainMessage(TSMessageType.ClientLeft.showCode(),server.getID(),clid,"Client left view");
+            Message msg = mHandler.obtainMessage(TSMessageType.ClientLeft.showCode(), server.getID(), clid, "Client left view");
             msg.sendToTarget();
-            }
-            catch (ServerConnection.SCNotFoundException ex)
-            {
-                Log.e("Notify","Failed to remove client from view, client id:"+clid+" not found in clientlist. "+ex.getErrorDescription(), ex);
-            }
+        } catch (ServerConnection.SCNotFoundException ex)
+        {
+            Log.e("Notify", "Failed to remove client from view, client id:" + clid + " not found in clientlist. " + ex.getErrorDescription(), ex);
         }
-        else if (type.equals("notifycliententerview"))
-        {   Set<String> keys = params.keySet();
-            Iterator<String> iterKeys = keys.iterator();
-            Pattern pattern = Pattern.compile("(\\d+)?(.+)");
-            TSClient client;
-            Matcher m;
-            String s;
-            int i = -1;
-            while (iterKeys.hasNext())
-            {s = iterKeys.next();
-                m = pattern.matcher(s);
-                if(m.find())
-                {  if((m.group(1)!=null)&&(Integer.valueOf(m.group(1))>i)){
-                    client = new TSClient(params,i);
+    }
+
+    private void handleNotifyClientEnterView(ServerConnection server, Map<String, String> params) throws TSRemoteException {
+        Set<String> keys = params.keySet();
+        Iterator<String> iterKeys = keys.iterator();
+        Pattern pattern = Pattern.compile("(\\d+)?(.+)");
+        TSClient client;
+        Matcher m;
+        String s;
+        int i = -1;
+        while (iterKeys.hasNext()) {
+            s = iterKeys.next();
+            m = pattern.matcher(s);
+            if (m.find()) {
+                if ((m.group(1) != null) && (Integer.valueOf(m.group(1)) > i)) {
+                    client = new TSClient(params, i);
                     server.AddClient(client);
-                    Message msg = mHandler.obtainMessage(TSMessageType.ClientJoined.showCode(),server.getID(),client.getClientID(),"Client entered view");
+                    Message msg = mHandler.obtainMessage(TSMessageType.ClientJoined.showCode(), server.getID(), client.getClientID(), "Client entered view");
                     msg.sendToTarget();
                     i++;
-                }
-                }
-                else
-                {
-                    throw new TSRemoteException("Unable to build client parameter map");
-                }
             }
-            //group=new TSGroup(grpMap);
-            if (i>-1)
-            {
-                server.ClientListReceived();
+            } else {
+                throw new TSRemoteException("Unable to build client parameter map");
             }
-            client = new TSClient(params,i);
-            server.AddClient(client);
-            Message msg = mHandler.obtainMessage(TSMessageType.ClientJoined.showCode(),server.getID(),client.getClientID(),"Client entered view");
-            msg.sendToTarget();
         }
-        else if(type.equals("notifychannelcreated"))
+        //group=new TSGroup(grpMap);
+        if (i > -1)
         {
-            TSChannel newChannel = new TSChannel(params);
-            server.AddChannel(newChannel);
-            Message msg = mHandler.obtainMessage(TSMessageType.ChannelCreated.showCode(),server.getID(),0,"Channel created");
-            msg.sendToTarget();
+            server.ClientListReceived();
+        }
+        client = new TSClient(params, i);
+        server.AddClient(client);
+        Message msg = mHandler.obtainMessage(TSMessageType.ClientJoined.showCode(), server.getID(), client.getClientID(), "Client entered view");
+        msg.sendToTarget();
+    }
 
-        }
-        else if (type.equals("notifychanneledited"))
-        {
-            int cid = Integer.valueOf(params.get("cid"));
-            try{
+    private void handleNotifyChannelCreated(ServerConnection server, Map<String, String> params) {
+        TSChannel newChannel = new TSChannel(params);
+        server.AddChannel(newChannel);
+        Message msg = mHandler.obtainMessage(TSMessageType.ChannelCreated.showCode(), server.getID(), 0, "Channel created");
+        msg.sendToTarget();
+
+    }
+
+    private void handleNotifyChannelEdited(ServerConnection server, Map<String, String> params) {
+        int cid = Integer.valueOf(params.get("cid"));
+        try {
             TSChannel channel = server.getChannelByID(cid);
             boolean resortNeeded = (params.containsKey("channel_order"))||(params.containsKey("channel_name"));
             channel.updateChannel(params);
             if (resortNeeded){//if you change something that effects its sort order
                 TSChannel parent = server.getChannelByID(channel.getParentID());//find its parent
                 parent.sortSubchannels(new ChannelOrderer(server));//and resort its position
-                }
+            }
             Message msg = mHandler.obtainMessage(TSMessageType.ChannelAltered.showCode(),server.getID(),cid,"Channel edited");
             msg.sendToTarget();
-            }
-            catch (ServerConnection.SCNotFoundException ex)
-            {
-                Log.e("Notify","Failed to edit channel, channel id:"+cid+" not found. "+ex.getErrorDescription(), ex);
-            }
-        }
-        else if (type.equals("notifyserverupdated"))
+        } catch (ServerConnection.SCNotFoundException ex)
         {
-            server.updateServer(params);
-            Message msg = mHandler.obtainMessage(TSMessageType.ServerAltered.showCode(),server.getID(),0,"Server edited");
-            msg.sendToTarget();
+            Log.e("Notify", "Failed to edit channel, channel id:" + cid + " not found. " + ex.getErrorDescription(), ex);
         }
-        else if (type.equals("notifyconnectstatuschange"))
+    }
+
+    private void handleNotifyServerUpdated(ServerConnection server, Map<String, String> params) {
+        server.updateServer(params);
+        Message msg = mHandler.obtainMessage(TSMessageType.ServerAltered.showCode(), server.getID(), 0, "Server edited");
+        msg.sendToTarget();
+    }
+
+    private void handleNotifyConnectStatusChange(ServerConnection server, Map<String, String> params) {
+
+        String status = params.get("status");
+        if (status.equals("connecting")) {
+            server.Reinitialise();
+        } else if (status.equals("connected"))
         {
-            String status =params.get("status");
-            if (status.equals("connecting"))
-            {   server.Reinitialise();
-            }
-            else if (status.equals("connected"))
-            {
-                server.connectionVerified();
-            }
-            else if (status.equals("connection_establishing"))
-            {
-                Log.i("Connection","Unused connection status:"+status);
-            }
-            else if(status.equals("connection_established"))
-            {
-                Log.i("Connection","Unused connection status:"+status);
-            }
-            else if (status.equals("disconnected"))
-            {
-                server.Disconnect();
-            }
+            server.connectionVerified();
+        } else if (status.equals("connection_establishing")) {
+            Log.i("Connection", "Unused connection status:" + status);
+        } else if (status.equals("connection_established")) {
+            Log.i("Connection", "Unused connection status:" + status);
+        } else if (status.equals("disconnected")) {
+            server.Disconnect();
         }
-        else if (type.equals("channellist"))
-        {
-            Set<String> keys = params.keySet();
-            Iterator<String> iterKeys = keys.iterator();
-            //Map<String,String> chanMap = new HashMap<String, String>();
-            Pattern pattern = Pattern.compile("(\\d+)?(.+)");
-            Matcher m;
-            String s;
-            TSChannel channel;
-            int i = -1;
-            while (iterKeys.hasNext())
-            {s = iterKeys.next();
-                m = pattern.matcher(s);
-                if(m.find())
-                {  if((m.group(1)!=null)&&(Integer.valueOf(m.group(1))>i))
-                {   channel = new TSChannel(params ,i);
+    }
+
+    private void handleChannelList(ServerConnection server, Map<String, String> params) throws TSRemoteException {
+        Set<String> keys = params.keySet();
+        Iterator<String> iterKeys = keys.iterator();
+        //Map<String,String> chanMap = new HashMap<String, String>();
+        Pattern pattern = Pattern.compile("(\\d+)?(.+)");
+        Matcher m;
+        String s;
+        TSChannel channel;
+        int i = -1;
+        while (iterKeys.hasNext()) {
+            s = iterKeys.next();
+            m = pattern.matcher(s);
+            if (m.find()) {
+                if ((m.group(1) != null) && (Integer.valueOf(m.group(1)) > i)) {
+                    channel = new TSChannel(params, i);
                     server.AddChannel(channel);
                     //chanMap.clear();
                     i++;
-                }
+            }
 
-                    //chanMap.put(m.group(2),params.get(s));
-                }
-                else
-                {
-                    throw new TSRemoteException("Unable to build channel parameter map");
-                }
-            }
-            channel=new TSChannel(params,i);
-            server.AddChannel(channel);
-        }
-        else if (type.equals("notifyclientneededpermissions"))
-        {
-            int id = Integer.valueOf(params.get("permid"));
-            boolean b = params.get("permid").equals("1");
-            Log.e("notify", "notifyneededpermissions occoured");
-        }
-        else if (type.equals("notifychanneldeleted"))
-        {
-            int cid = Integer.valueOf(params.get("cid"));
-            int i = 0;
-            try{
-                server.removeChannelByID(cid);
-                Message msg = mHandler.obtainMessage(TSMessageType.ChannelDeleted.showCode(),server.getID(),cid,"Channel deleted");
-                msg.sendToTarget();
-            }
-            catch (ServerConnection.SCNotFoundException ex)
+                //chanMap.put(m.group(2),params.get(s));
+            } else
             {
-            Log.e("Notify","Failed to remove channel from view, channel id:"+cid+" not found in channellist. "+ex.getErrorDescription(), ex);
+                throw new TSRemoteException("Unable to build channel parameter map");
             }
         }
-        else if (type.equals("notifychannelsubscribed"))
-        {int cid = Integer.valueOf(params.get("cid"));
-        server.getChannelByID(cid).subscibe();
-        Message msg = mHandler.obtainMessage(TSMessageType.ChannelAltered.showCode(),server.getID(),cid,"Subscribed to channel");
-        msg.sendToTarget();
-        }
-        else if (type.equals("notifychannelpermlist"))
-        {
-            Log.i("Notify","Unused notify type:"+type);
-        }
-        else if (type.equals("notifyservergrouppermlist"))
-        {
-            Log.i("Notify","Unused notify type:"+type);
-        }
-        else if(type.equals("notifychannelmoved"))
-        {int cid = Integer.valueOf(params.get("cid"));
-         int cpid = Integer.valueOf(params.get("cpid"));
-            server.moveChannel(cid,cpid);
-            Message msg = mHandler.obtainMessage(TSMessageType.ChannelMoved.showCode(),server.getID(),cid,"Channel moved");
+        channel = new TSChannel(params, i);
+        server.AddChannel(channel);
+    }
+
+    private void handleNotifyChannelDeleted(ServerConnection server, Map<String, String> params) {
+        int cid = Integer.valueOf(params.get("cid"));
+        int i = 0;
+        try {
+            server.removeChannelByID(cid);
+            Message msg = mHandler.obtainMessage(TSMessageType.ChannelDeleted.showCode(), server.getID(), cid, "Channel deleted");
             msg.sendToTarget();
+        } catch (ServerConnection.SCNotFoundException ex)
+        {
+            Log.e("Notify", "Failed to remove channel from view, channel id:" + cid + " not found in channellist. " + ex.getErrorDescription(), ex);
         }
-        else if (type.equals("notifychannelpasswordchanged"))
-        {int cid = Integer.valueOf(params.get("cid"));
-         TSChannel channel = server.getChannelByID(cid);
-         channel.passwordChanged();
-         Message msg = mHandler.obtainMessage(TSMessageType.ChannelAltered.showCode(),server.getID(),cid,"Channel password changed");
-         msg.sendToTarget();
-        }
-        else if (type.equals("notifyserveredited")){
-        server.edited(params);
-        Message msg = mHandler.obtainMessage(TSMessageType.ServerAltered.showCode(),server.getID(),0,"Server edited");
+    }
+
+    private void handleNotifyChannelSubscribed(ServerConnection server, Map<String, String> params) throws ServerConnection.SCNotFoundException {
+        int cid = Integer.valueOf(params.get("cid"));
+        server.getChannelByID(cid).subscibe();
+        Message msg = mHandler.obtainMessage(TSMessageType.ChannelAltered.showCode(), server.getID(), cid, "Subscribed to channel");
         msg.sendToTarget();
-        }
-        else if (type.equals("notifyfilelist"))
-        {
-            Log.i("Notify","Unused notify type:"+type);
-        }
-        else if (type.equals("notifyfilelistfinished"))
-        {
-            Log.i("Notify","Unused notify type:"+type);
-        }
-        else if (type.equals("notifychanneldescriptionchanged"))
-        {int cid = Integer.valueOf(params.get("cid"));
-            Log.i("Notify","Unused notify type:"+type);
-        }
-        else if (type.equals("notifystartdownload"))
-        {
-            Log.i("Notify","Unused notify type:"+type);
-        }
-        else if (type.equals("channellistfinished"))
-        {
+    }
+
+    private void handleNotifyChannelMoved(ServerConnection server, Map<String, String> params) throws ServerConnection.SCNotFoundException {
+        int cid = Integer.valueOf(params.get("cid"));
+        int cpid = Integer.valueOf(params.get("cpid"));
+        server.moveChannel(cid, cpid);
+        Message msg = mHandler.obtainMessage(TSMessageType.ChannelMoved.showCode(), server.getID(), cid, "Channel moved");
+        msg.sendToTarget();
+    }
+
+    private void handleNotifyChannelPasswordChanged(ServerConnection server, Map<String, String> params) throws ServerConnection.SCNotFoundException {
+        int cid = Integer.valueOf(params.get("cid"));
+        TSChannel channel = server.getChannelByID(cid);
+        channel.passwordChanged();
+        Message msg = mHandler.obtainMessage(TSMessageType.ChannelAltered.showCode(), server.getID(), cid, "Channel password changed");
+        msg.sendToTarget();
+    }
+
+    private void handleNotifyServerEdited(ServerConnection server, Map<String, String> params) {
+        server.edited(params);
+        Message msg = mHandler.obtainMessage(TSMessageType.ServerAltered.showCode(), server.getID(), 0, "Server edited");
+        msg.sendToTarget();
+    }
+
+    private void handleChannelListFinished(ServerConnection server) {
         server.processChannels();
         server.ChannelsReceived();//this means the client has finished sending us the channel list
-        }
-        else if (type.equals("notifymutedclientdisconnected")) {
-            Log.i("Notify", "Unused notify type:" + type);
-        } else if (type.equals("notifychannelunsubscribed"))
-        {
-            Log.i("Notify","Unused notify type:"+type);
-        }
-        else
-        {   Log.w("Notify","Unhandled notify type:"+type);
-            //UI.Received("received  "+type+" from SCHandler="+server.getID());
-        }
     }
 }
