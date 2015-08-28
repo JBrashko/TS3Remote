@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
+ *An enum specifying the different kinds of notify message types
  * Created by James on 28/08/2015.
  */
 public enum NotifyMessageType {
@@ -70,6 +71,5 @@ public enum NotifyMessageType {
             return Lookup.get(type);
         }
         return invalid;
-
     }
 }

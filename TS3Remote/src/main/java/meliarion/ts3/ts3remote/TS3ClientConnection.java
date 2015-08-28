@@ -597,6 +597,9 @@ public class TS3ClientConnection implements Runnable, ClientConnectionInterface 
             case notifyserveredited:
                 handleNotifyServerEdited(server, params);
                 break;
+            case channellistfinished:
+                handleChannelListFinished(server);
+                break;
             case notifyfilelist:
             case notifyfilelistfinished:
             case notifyservergroupclientadded:
