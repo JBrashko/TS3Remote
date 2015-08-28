@@ -63,9 +63,14 @@ public class LauncherActivity extends Activity {
     {
         CheckBox box = (CheckBox)findViewById(R.id.useRemote);
         boolean remote = box.isChecked();
+        boolean secure = ((CheckBox) findViewById(R.id.useSSL)).isChecked();
         ClientConnectionType type;
         if(remote){
-            type = ClientConnectionType.ManagedNetwork;
+            if (secure) {
+                type = ClientConnectionType.SecureNetwork;
+            } else {
+                type = ClientConnectionType.ManagedNetwork;
+            }
         }
         else
         {

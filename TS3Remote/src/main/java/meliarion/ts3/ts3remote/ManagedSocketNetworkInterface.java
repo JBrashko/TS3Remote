@@ -1,8 +1,6 @@
 package meliarion.ts3.ts3remote;
 
 import java.io.IOException;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 
 /**
@@ -27,5 +25,10 @@ public class ManagedSocketNetworkInterface extends SocketNetworkInterface  imple
         {
             return false;
         }
+    }
+
+    @Override
+    public String getConnectionString() {
+        return "Managed connection to " + this.getIP() + ":" + this.getPort();
     }
 }

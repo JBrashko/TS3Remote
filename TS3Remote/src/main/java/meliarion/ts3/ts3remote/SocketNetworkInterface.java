@@ -53,7 +53,7 @@ public class SocketNetworkInterface implements NetworkInterface {
 
     @Override
     public String getConnectionString() {
-        return IP+":"+Port;
+        return "Connected to "+ IP+":"+Port;
     }
     private boolean stageZero(String data)
     {
@@ -91,7 +91,14 @@ public class SocketNetworkInterface implements NetworkInterface {
     public boolean isConnected() {
         return socket.isConnected();
     }
-
+    public String getIP()
+    {
+        return IP;
+    }
+    public int getPort()
+    {
+        return Port;
+    }
     @Override
     public boolean usesKeepAlive() {
         return true;

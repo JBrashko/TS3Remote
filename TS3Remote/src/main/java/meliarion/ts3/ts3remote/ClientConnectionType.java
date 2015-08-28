@@ -22,7 +22,8 @@ public enum ClientConnectionType {
     int showCode(){
         return Code;
     }
-    private static final Map lookup = new HashMap();
+
+    private static final Map<Integer, ClientConnectionType> lookup = new HashMap();
 
     // Populate the lookup table on loading time
     static {
@@ -31,7 +32,7 @@ public enum ClientConnectionType {
     }
 
     public static ClientConnectionType get(int code){
-        return (ClientConnectionType)lookup.get(code);
+        return lookup.get(code);
     }
 
     @Override

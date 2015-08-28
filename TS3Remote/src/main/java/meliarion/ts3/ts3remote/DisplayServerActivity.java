@@ -232,8 +232,8 @@ public class DisplayServerActivity extends FragmentActivity implements RemoteUse
                 return true;
         }
         return super.onOptionsItemSelected(item);
-
     }
+
     public void TestButton (View view)
     {
         // TSServerView serverView = (TSServerView) findViewById(R.id.serverView);
@@ -262,11 +262,7 @@ public class DisplayServerActivity extends FragmentActivity implements RemoteUse
         }
    }
     private void ShowChatMessage(Message msg)throws Exception{
-    ServerConnection sc = networkInterface.getSCHandler((msg.arg1));
-    //TextView serverChat = (TextView) findViewById(R.id.serverChatView);
-    //serverChat.setText(sc.getServerChat());
-    //TextView channelChat = (TextView) findViewById(R.id.channelChatView);
-    //channelChat.setText(sc.getChannelChat());*/
+        ServerConnection sc = networkInterface.getSCHandler((msg.arg1));
         TextView Chat = (TextView) findViewById(R.id.ChatTextView);
         FragmentManager manager = getSupportFragmentManager();
 
@@ -280,7 +276,7 @@ public class DisplayServerActivity extends FragmentActivity implements RemoteUse
         Chat.append("New chat message received." + a + ":" + s.size() + "\r\n");
         switch (msg.arg2){//arg2 is the chat type
             case 1://private message
-                Log.w("DisplayServerActivity", "Private message recieved");
+                Log.i("DisplayServerActivity", "Private message recieved");
                 HashMap<String, String> params = (HashMap) msg.obj;
                 int clientID = sc.getClientID();
                 int invokerID = Integer.parseInt(params.get("invokerid"));

@@ -533,6 +533,10 @@ public class TS3ClientConnection implements Runnable, ClientConnectionInterface 
 
 
     private void handleNotify(String type, ServerConnection server, Map<String, String> params)throws Exception{
+        NotifyMessageType notifyMessageType = NotifyMessageType.getNotifyMessageType(type);
+        switch (notifyMessageType) {
+
+        }
         if (type.equals("selected"))
         {
             UsedSCHandlerIndex = SCHandlers.indexOf(getSCHandler(server.getID()));
@@ -585,7 +589,6 @@ public class TS3ClientConnection implements Runnable, ClientConnectionInterface 
                     grpMap.clear();
                     i++;
                 }
-
                   grpMap.put(m.group(2),params.get(s));
                 }
                 else
@@ -883,7 +886,9 @@ public class TS3ClientConnection implements Runnable, ClientConnectionInterface 
         server.processChannels();
         server.ChannelsReceived();//this means the client has finished sending us the channel list
         }
-        else if (type.equals("notifymutedclientdisconnected"))
+        else if (type.equals("notifymutedclientdisconnected")) {
+            Log.i("Notify", "Unused notify type:" + type);
+        } else if (type.equals("notifychannelunsubscribed"))
         {
             Log.i("Notify","Unused notify type:"+type);
         }

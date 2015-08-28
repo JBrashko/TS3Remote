@@ -345,14 +345,18 @@ public class ServerConnection {
     }
 
     public void AddClient(TSClient client){
-        ClientList.add(client);
-        ClientMap.put(client.getClientID(),ClientList.size()-1);
-        List<Integer> cList;
-        if((cList = ChannelToClientMap.get(client.getChannelID()))==null){
-            ChannelToClientMap.put(client.getChannelID(),cList = new ArrayList<Integer>());
+        if (ClientMap.containsKey(client.getClientID()) != true) {
+            ClientList.add(client);
+            ClientMap.put(client.getClientID(), ClientList.size() - 1);
+            List<Integer> cList;
+            if ((cList = ChannelToClientMap.get(client.getChannelID())) == null) {
+                ChannelToClientMap.put(client.getChannelID(), cList = new ArrayList<Integer>());
+            }
+            cList.add(client.getClientID());
+            Collections.sort(cList, new ClientOrderer(this));
+        } else {
+            Log.e("ServerConnection", "Unable to add client, a client with that ID is already present");
         }
-        cList.add(client.getClientID());
-        Collections.sort(cList, new ClientOrderer(this));
     }
     public void AddClient(Map<String,String> params)
     {TSClient client = new TSClient(params);
@@ -384,7 +388,6 @@ public class ServerConnection {
                 grp.updateGroup(group);
             }
         }
-
     }
     public void AddServerGroupByParams(Map<String,String> grpMap) {
     TSGroup grp = null;
