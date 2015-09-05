@@ -18,7 +18,7 @@ public class ManagedSocketNetworkInterface extends SocketNetworkInterface  imple
 
     @Override
     public boolean verifyConnect(String data, String[] connectInfo) {
-        if(password==""){
+        if (password.equals("")) {
         return super.verifyConnect(data, connectInfo);
         }
         else

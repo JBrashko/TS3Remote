@@ -451,10 +451,9 @@ public class TSServerView extends View {
             {
                 iconRefs.add(R.drawable.client_is_priority_speaker);
             }
-        }
-        catch (Exception e)
+        } catch (Resources.NotFoundException e)
         {
-            Log.e("TSView", "Error building priority speaker icon for client:"+client.getClientID()+":"+e.toString(),e);
+            Log.e("TSView", "Error building priority speaker icon for client:" + client.getClientID(), e);
         }
         try{//add talk power related icons
             int talk = client.getTalkPower();
@@ -469,10 +468,12 @@ public class TSServerView extends View {
                     iconRefs.add(R.drawable.client_input_muted);
                 }
             }
-        }
-        catch (Exception e)
+        } catch (Resources.NotFoundException e)
         {
-            Log.e("TSView", "Error building talk power icon for client:"+client.getClientID()+":"+e.toString(),e);
+            Log.e("TSView", "Error retrieving talk power icon for client:" + client.getClientID() + ":" + e.toString(), e);
+        } catch (ServerConnection.SCNotFoundException e) {
+            Log.e("TSView", "Error retrieving " + e.getItemNotFoundType().toString() + " for client:" + client.getClientID() + ":" + e.toString(), e);
+            connection.addRequest(e.getItemNotFoundType());
         }
 
         try{//add channel group icon
@@ -484,9 +485,12 @@ public class TSServerView extends View {
                     iconRefs.add(iconRef);
                 }
             }
-        }catch (Exception e)
+        } catch (Resources.NotFoundException e)
         {
-            Log.e("TSView","Error getting client channel group id for client:"+client.getClientID()+": "+e.toString(),e);
+            Log.e("TSView", "Error getting client channel group id for client:" + client.getClientID(), e);
+        } catch (ServerConnection.SCNotFoundException e) {
+            Log.e("TSView", "Error retrieving " + e.getItemNotFoundType().toString() + " for client:" + client.getClientID(), e);
+            connection.addRequest(e.getItemNotFoundType());
         }
         for(int id: serverGroups){//add server group icons
             try{
@@ -503,10 +507,10 @@ public class TSServerView extends View {
             }
             catch (Resources.NotFoundException exception){
             Log.d("TSView", "Failed to find icon for server group id ="+id,exception);
-            }
-            catch (Exception e)
+            } catch (ServerConnection.SCNotFoundException e)
             {
-            Log.e("TSView","Error getting client server group id for client:"+client.getClientID()+": "+e.toString(),e);
+                Log.e("TSView", "Error getting " + e.getItemNotFoundType().toString() + " for client:" + client.getClientID(), e);
+                connection.addRequest(e.getItemNotFoundType());
             }
         }
         try{
@@ -518,10 +522,9 @@ public class TSServerView extends View {
                 }
             }
 
-        }
-        catch (Exception ex)
+        } catch (Resources.NotFoundException ex)
         {
-            Log.e("TSView", "Error getting country icon for client:"+client.getClientID()+":"+ex.toString(),ex);
+            Log.e("TSView", "Error getting country icon for client:" + client.getClientID(), ex);
         }
         try{//add client icon
         if (client.getIconID() != 0)
@@ -532,10 +535,9 @@ public class TSServerView extends View {
                 iconRefs.add(iconRef);
             }
         }
-        }
-        catch (Exception e)
+        } catch (Resources.NotFoundException e)
         {
-            Log.e("TSView", "Error getting client icon id for client:"+client.getClientID()+":"+e.toString(),e);
+            Log.e("TSView", "Error getting client icon id for client:" + client.getClientID(), e);
         }
         return buildRightIcons(iconRefs);
     }

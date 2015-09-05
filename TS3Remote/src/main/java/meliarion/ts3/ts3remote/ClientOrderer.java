@@ -37,7 +37,7 @@ public class ClientOrderer implements Comparator<Integer> {
         }
         catch (ServerConnection.SCException ex)
         {
-            Log.e("ClientOrderer", "unable to retrieve client from client list. ", ex);
+            Log.w("ClientOrderer", "unable to retrieve client from client list. ", ex);
         return 0;
         }
 

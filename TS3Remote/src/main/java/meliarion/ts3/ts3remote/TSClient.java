@@ -50,39 +50,45 @@ import java.util.regex.Pattern;
 
     }
     TSClient (String dataBlock)throws Exception{
-        String s = "clid=(\\d+)\\scid=(\\d+)\\sclient_database_id=(\\d+)\\sclient_nickname=(\\S+)\\sclient_type=(\\d+) client_away=(\\d) client_away_message=?(\\S*) client_flag_talking=(\\d) client_input_muted=(\\d) client_output_muted=(\\d) client_input_hardware=(\\d) client_output_hardware=(\\d) client_talk_power=(\\d+) client_is_talker=(\\d) client_is_priority_speaker=(\\d) client_is_recording=(\\d) client_is_channel_commander=(\\d) client_is_muted=(\\d) client_unique_identifier=(\\S+) client_servergroups=(\\S+) client_channel_group_id=(\\d+) client_icon_id=(\\d+) client_country=?([^\\|\\s]*)";
+
+        String s = "clid=(\\d+)\\scid=(\\d+)\\sclient_database_id=(\\d+)\\sclient_nickname=(\\S+)\\sclient_type=(\\d+) client_away=(\\d) client_away_message=?(\\S*) client_flag_talking=(\\d) client_input_muted=(\\d) client_output_muted=(\\d) client_input_hardware=(\\d) client_output_hardware=(\\d) client_talk_power=(\\-?\\d+) client_is_talker=(\\d) client_is_priority_speaker=(\\d) client_is_recording=(\\d) client_is_channel_commander=(\\d) client_is_muted=(\\d) client_unique_identifier=(\\S+) client_servergroups=(\\S+) client_channel_group_id=(\\d+) client_icon_id=(\\d+) client_country=?([^\\|\\s]*)";
         Pattern pattern = Pattern.compile(s);
         Matcher m = pattern.matcher(dataBlock.trim());
         if (m.find()){
-        this.CLID = Integer.valueOf(m.group(1));
-        this.ChannelID = Integer.valueOf(m.group(2));
-        this.CDBID=Integer.valueOf(m.group(3));
-        this.Name=m.group(4);
-        this.type = ClientType.getClientTypeByID(Integer.valueOf(m.group(5)));
-        this.Away = m.group(6).equals("1");
-        this.AwayMsg =m.group(7);
-        this.talking=m.group(8).equals("1");
-        this.inputMuted=m.group(6).equals("1");
-        this.outputMuted = m.group(10).equals("1");
-        this.inputEnabled = m.group(11).equals("1");
-        this.outputEnabled = m.group(12).equals("1");
-        this.talkPower = Integer.valueOf(m.group(13));
-        this.canTalk = m.group(14).equals("1");
-        this.prioritySpeaker = m.group(15).equals("1");
-        this.recording = m.group(16).equals("1");
-        this.channelCommander = m.group(17).equals("1");
-        this.localMuted = false;//m.group(18).equals("1");
-        this.UID = m.group(19);
-        String grps = m.group(20);
-        channelGroupID = Integer.valueOf(m.group(21));
-        iconID = Integer.valueOf(m.group(22));
-        country = m.group(23);
-        populateServerGroupIDs(grps);
+            try {
+                this.CLID = Integer.valueOf(m.group(1));
+                this.ChannelID = Integer.valueOf(m.group(2));
+                this.CDBID = Integer.valueOf(m.group(3));
+                this.Name = m.group(4);
+                this.type = ClientType.getClientTypeByID(Integer.valueOf(m.group(5)));
+                this.Away = m.group(6).equals("1");
+                this.AwayMsg = m.group(7);
+                this.talking = m.group(8).equals("1");
+                this.inputMuted = m.group(6).equals("1");
+                this.outputMuted = m.group(10).equals("1");
+                this.inputEnabled = m.group(11).equals("1");
+                this.outputEnabled = m.group(12).equals("1");
+                this.talkPower = Integer.valueOf(m.group(13));
+                this.canTalk = m.group(14).equals("1");
+                this.prioritySpeaker = m.group(15).equals("1");
+                this.recording = m.group(16).equals("1");
+                this.channelCommander = m.group(17).equals("1");
+                this.localMuted = false;//m.group(18).equals("1");
+                this.UID = m.group(19);
+                String grps = m.group(20);
+                channelGroupID = Integer.valueOf(m.group(21));
+                iconID = Integer.valueOf(m.group(22));
+                country = m.group(23);
+                populateServerGroupIDs(grps);
+            } catch (Exception e) {
+                throw new Exception("An error occurred parsing the client's data block", e);
+            }
         }
         else
         {
           throw new Exception("Failed to parse data block for client");
         }
+
 
     }
     TSClient (Map<String, String> params)
@@ -221,10 +227,10 @@ import java.util.regex.Pattern;
 
     public void moveClient(Map<String, String> params)
     {
-    String s;
         this.ChannelID=Integer.valueOf(params.get("ctid"));
     }
 
+    @SuppressWarnings("UnusedAssignment")
     public void updateClient(Map<String, String> params) {
          if(params.containsKey("client_is_channel_commander"))
          {

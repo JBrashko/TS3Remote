@@ -2,7 +2,6 @@ package meliarion.ts3.ts3remote;
 
 import java.util.EnumSet;
 import java.util.HashMap;
-import java.util.Map;
 
 /**
  *An enum specifying the different kinds of notify message types
@@ -21,7 +20,7 @@ public enum NotifyMessageType {
     notifycurrentserverconnectionchanged("notifycurrentserverconnectionchanged"),
     notifyservergroupclientadded("notifyservergroupclientadded"),
     notifyclientleftview("notifyclientleftview"),
-    notifycliententerview("notifyclientleftview"),
+    notifycliententerview("notifycliententerview"),
     notifychannelcreated("notifychannelcreated"),
     notifychanneledited("notifychanneledited"),
     notifyserverupdated("notifyserverupdated"),
@@ -44,7 +43,7 @@ public enum NotifyMessageType {
     notifychannelunsubscribed("notifychannelunsubscribed");
 
     private final String text;
-    private static final Map<String, NotifyMessageType> Lookup = new HashMap();
+    private static final HashMap<String, NotifyMessageType> Lookup = new HashMap<String, NotifyMessageType>();
 
     static {
         for (NotifyMessageType n : EnumSet.allOf(NotifyMessageType.class)) {

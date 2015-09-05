@@ -7,12 +7,12 @@ package meliarion.ts3.ts3remote;
 public class ChatMessage {
     private final int sender;
     private final String message;
-    private final long timestap;
+    private final long timestamp;
 
     public ChatMessage(String _message, int _sender, long _timestamp) {
         this.sender = _sender;
         this.message = _message;
-        this.timestap = _timestamp;
+        this.timestamp = _timestamp;
 
     }
 
@@ -24,8 +24,8 @@ public class ChatMessage {
         return message;
     }
 
-    public long getTimestap() {
-        return timestap;
+    public long getTimestamp() {
+        return timestamp;
     }
 
     public String toString() {

@@ -26,119 +26,12 @@ import java.util.List;
  * Created by Meliarion on 05/06/13.
  * Activity which handles the UI for the teamspeak remote
  */
-public class DisplayServerActivity extends FragmentActivity implements RemoteUserInterface, ChatFragment.OnFragmentInteractionListener {
+public class DisplayServerActivity extends FragmentActivity implements RemoteUserInterface, ChatFragment.OnFragmentInteractionListener, Handler.Callback {
     private PersistantFragmentTabHost mTabHost;
     private ClientConnectionInterface networkInterface;
     private Thread networkThread;
     private int rec = 0;
-    private Handler mHandler = new Handler(Looper.getMainLooper()){
-        @Override
-        public void handleMessage(Message msg){ //arg1 is the server connection
-            int i = msg.what;
-        TSMessageType mType = TSMessageType.get(i);
-        TSServerView serverView = (TSServerView) findViewById(R.id.serverView);
-            String origin;
-            if (mType.equals(TSMessageType.ClientConnectionAltered)){
-                serverView.clientConnectionClosed();
-                return;
-            }
-            try{
-            switch (mType){
-                case DebugMessage:
-                origin = "Debug message";
-                break;
-                case GeneralMessage:
-                origin = "General message";
-                break;
-                case SetupMessage:
-                origin = "Setup Message";
-                break;
-                case ChatMessage:
-                origin = "Chat message";
-                ShowChatMessage(msg);
-                break;
-                case ClientAltered:
-                origin = "Client status changed";
-                break;
-                case SetupDone:
-                    if(msg.arg2==1){
-                origin = "Server connection id="+msg.arg1+" setup is done";
-                    }
-                    else
-                    {
-                origin = "Client connection setup is done";
-                    }
-                break;
-                default:
-                origin = "Unknown origin";
-                break;
-            }
-
-                String text;
-                if (msg.obj.getClass() == String.class) {
-                    text = (String) msg.obj;
-                } else if (msg.obj.getClass() == HashMap.class) {
-                    text = (String) (((HashMap) msg.obj).get("type"));
-                } else {
-                    text = "Message object is not a valid class type. Object type is: " + msg.obj.getClass().getName();
-                    Log.e("DisplayServerActivity", text);
-                }
-//            String message = origin+": "+text;//textView.getText().toString().trim();
-                Log.d("MessageHandler","Message of type "+origin+" received : "+text);
-
-                if(msg.arg1!=-1){
-                    ServerConnection used = networkInterface.getSCHandler(msg.arg1);
-
-                    if(serverView.getSCHandlerid()!=used.getID()){
-                    serverView.setHandler(used);
-                    }
-                    if(used.isConnected())
-                    {
-                       switch (mType){
-                        case ClientAltered:
-                        serverView.clientChanged(msg.arg2);//arg2 is client id
-                        break;
-                        case ClientMoved:
-                        serverView.clientMoved(msg.arg2);//arg2 is client id
-                        break;
-                        case ClientLeft:
-                        serverView.clientLeft(msg.arg2);//arg2 is client id
-                        break;
-                        case ClientJoined:
-                        serverView.clientJoined(msg.arg2);//arg2 is client id
-                        break;
-                        case ChannelCreated:
-                        serverView.channelCreated(msg.arg2);//arg2 is channel id
-                        break;
-                        case ChannelAltered:
-                        serverView.channelChanged(msg.arg2);//arg2 is channel id
-                        break;
-                        case SetupDone:
-                        serverView.setHandler(used);
-                        break;
-                        case DisplayedServerConnectionChange:
-                        break;
-                        default:
-                        serverView.test();
-                        break;
-
-                    }
-                       // update(used.DisplayServer());
-                    }
-                    else
-                    {   serverView.setHandler(used);
-                      //  update("Displayed server connection is not connected");
-                    }
-                }
-            }
-            catch (Exception e)
-            {Thread thisThread = Thread.currentThread();
-                String error = "A failure occurred on thread:"+thisThread.getName()+" :"+e;
-                Log.e("Handle message failure", error,e);
-                update("Server updateGroup failure "+e);
-            }
-        }
-    };
+    private static Handler mHandler;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -149,6 +42,7 @@ public class DisplayServerActivity extends FragmentActivity implements RemoteUse
         ClientConnectionType type = ClientConnectionType.get(intent.getIntExtra(LauncherActivity.CONNECTION_TYPE,-1));
         setContentView(R.layout.activity_connection);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        mHandler = new Handler(Looper.getMainLooper(), this);
         String returnMsg;
         ConnectivityManager connMgr = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
@@ -175,7 +69,7 @@ public class DisplayServerActivity extends FragmentActivity implements RemoteUse
     }
 
     private void addChatTab(String tag, String label) {
-        mTabHost = (PersistantFragmentTabHost) findViewById(R.id.fragChatTabhost);
+        mTabHost = (PersistantFragmentTabHost) findViewById(R.id.fragChatTabHost);
         mTabHost.setup(this, getSupportFragmentManager(), android.R.id.tabcontent);
         TabHost.TabSpec tabChat = mTabHost.newTabSpec(tag);
         tabChat.setIndicator(label, null);
@@ -185,7 +79,7 @@ public class DisplayServerActivity extends FragmentActivity implements RemoteUse
     private void addChatTab(String tag, String label, String content) {
         Bundle bundle = new Bundle();
         bundle.putString("content", content);
-        mTabHost = (PersistantFragmentTabHost) findViewById(R.id.fragChatTabhost);
+        mTabHost = (PersistantFragmentTabHost) findViewById(R.id.fragChatTabHost);
         mTabHost.setup(this, getSupportFragmentManager(), android.R.id.tabcontent);
         TabHost.TabSpec tabChat = mTabHost.newTabSpec(tag);
         tabChat.setIndicator(label, null);
@@ -243,6 +137,10 @@ public class DisplayServerActivity extends FragmentActivity implements RemoteUse
             TextView Chat = (TextView) findViewById(R.id.ChatTextView);
             ChatFragment as = (ChatFragment) manager.findFragmentByTag("serverChat");
             View v = as.getView();
+            if (v == null) {
+                Log.e("DisplayServerActivity", "Error retrieving view for " + as.getTag());
+                return;
+            }
             TextView f = (TextView) v.findViewById(R.id.chat);
             Chat.append(f.getText());
         } catch (NullPointerException ex) {
@@ -277,6 +175,10 @@ public class DisplayServerActivity extends FragmentActivity implements RemoteUse
         switch (msg.arg2){//arg2 is the chat type
             case 1://private message
                 Log.i("DisplayServerActivity", "Private message recieved");
+                if (msg.obj.getClass() != HashMap.class) {
+                    Log.e("DisplayServerActivity", "Invalid message object type");
+                    return;
+                }
                 HashMap<String, String> params = (HashMap) msg.obj;
                 int clientID = sc.getClientID();
                 int invokerID = Integer.parseInt(params.get("invokerid"));
@@ -329,5 +231,109 @@ public class DisplayServerActivity extends FragmentActivity implements RemoteUse
     @Override
     public void onChatMessageSend(String message) {
 
+    }
+
+    @Override
+    public boolean handleMessage(Message msg) {
+        int i = msg.what;
+        TSMessageType mType = TSMessageType.get(i);
+        TSServerView serverView = (TSServerView) findViewById(R.id.serverView);
+        String origin;
+        if (mType.equals(TSMessageType.ClientConnectionAltered)) {
+            serverView.clientConnectionClosed();
+            return true;
+        }
+        try {
+            switch (mType) {
+                case DebugMessage:
+                    origin = "Debug message";
+                    break;
+                case GeneralMessage:
+                    origin = "General message";
+                    break;
+                case SetupMessage:
+                    origin = "Setup Message";
+                    break;
+                case ChatMessage:
+                    origin = "Chat message";
+                    ShowChatMessage(msg);
+                    break;
+                case ClientAltered:
+                    origin = "Client status changed";
+                    break;
+                case SetupDone:
+                    if (msg.arg2 == 1) {
+                        origin = "Server connection id=" + msg.arg1 + " setup is done";
+                    } else {
+                        origin = "Client connection setup is done";
+                    }
+                    break;
+                default:
+                    origin = "Unknown origin";
+                    break;
+            }
+
+            String text;
+            if (msg.obj.getClass() == String.class) {
+                text = (String) msg.obj;
+            } else if (msg.obj.getClass() == HashMap.class) {
+                text = (String) (((HashMap) msg.obj).get("type"));
+            } else {
+                text = "Message object is not a valid class type. Object type is: " + msg.obj.getClass().getName();
+                Log.e("DisplayServerActivity", text);
+            }
+//            String message = origin+": "+text;//textView.getText().toString().trim();
+            Log.d("MessageHandler", "Message of type " + origin + " received : " + text);
+
+            if (msg.arg1 != -1) {
+                ServerConnection used = networkInterface.getSCHandler(msg.arg1);
+
+                if (serverView.getSCHandlerid() != used.getID()) {
+                    serverView.setHandler(used);
+                }
+                if (used.isConnected()) {
+                    switch (mType) {
+                        case ClientAltered:
+                            serverView.clientChanged(msg.arg2);//arg2 is client id
+                            break;
+                        case ClientMoved:
+                            serverView.clientMoved(msg.arg2);//arg2 is client id
+                            break;
+                        case ClientLeft:
+                            serverView.clientLeft(msg.arg2);//arg2 is client id
+                            break;
+                        case ClientJoined:
+                            serverView.clientJoined(msg.arg2);//arg2 is client id
+                            break;
+                        case ChannelCreated:
+                            serverView.channelCreated(msg.arg2);//arg2 is channel id
+                            break;
+                        case ChannelAltered:
+                            serverView.channelChanged(msg.arg2);//arg2 is channel id
+                            break;
+                        case SetupDone:
+                            serverView.setHandler(used);
+                            break;
+                        case DisplayedServerConnectionChange:
+                            break;
+                        default:
+                            serverView.test();
+                            break;
+
+                    }
+                    // update(used.DisplayServer());
+                } else {
+                    serverView.setHandler(used);
+                    //  update("Displayed server connection is not connected");
+                }
+            }
+            return true;
+        } catch (Exception e) {
+            Thread thisThread = Thread.currentThread();
+            String error = "A failure occurred on thread:" + thisThread.getName() + " :" + e;
+            Log.e("Handle message failure", error, e);
+            update("Server updateGroup failure " + e);
+            return false;
+        }
     }
 }

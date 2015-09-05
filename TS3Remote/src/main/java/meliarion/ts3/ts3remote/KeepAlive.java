@@ -8,8 +8,8 @@ import android.util.Log;
  * after a certain amount of time has passed since the last message
  */
 class KeepAlive implements Runnable {
-    private TS3ClientConnection parent;
-    private long keepAliveTime;
+    private final TS3ClientConnection parent;
+    private final long keepAliveTime;
     private Thread thisThread;
     private boolean running = true;
     private boolean initialising = true;
@@ -49,8 +49,9 @@ class KeepAlive implements Runnable {
         continue;
         }
         try{
-        Log.i("KeepAlive", "sending message: " + message+" to keep connection alive");
-        parent.SendCQMessage(message);
+            Log.i("KeepAlive", "sending keep alive message");
+            //parent.SendCQMessage(message);
+            parent.SendKeepAlive(message);
         }
         catch (Exception ex)
         {

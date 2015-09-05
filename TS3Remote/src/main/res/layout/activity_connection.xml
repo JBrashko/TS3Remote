@@ -147,7 +147,7 @@
         </TabHost>
     -->
     <meliarion.ts3.ts3remote.PersistantFragmentTabHost
-        android:id="@+id/fragChatTabhost"
+        android:id="@+id/fragChatTabHost"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 

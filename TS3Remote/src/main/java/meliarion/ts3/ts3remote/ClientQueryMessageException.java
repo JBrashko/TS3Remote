@@ -5,8 +5,8 @@ package meliarion.ts3.ts3remote;
  * Exception created to handle client query errors
  */
 public class ClientQueryMessageException extends Exception {
-    private int errorCode;
-    private String errorDescription;
+    private final int errorCode;
+    private final String errorDescription;
     public ClientQueryMessageException(int code, String message){
         super(message);
         this.errorCode = code;

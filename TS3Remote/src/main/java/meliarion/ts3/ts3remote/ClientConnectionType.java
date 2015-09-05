@@ -14,7 +14,7 @@ public enum ClientConnectionType {
     ManagedNetwork(1),
     SecureNetwork(2),
     USBADB(3);
-    private int Code;
+    private final int Code;
     ClientConnectionType(int messageCode)
     {
         this.Code = messageCode;
@@ -23,6 +23,7 @@ public enum ClientConnectionType {
         return Code;
     }
 
+    @SuppressWarnings("unchecked")
     private static final Map<Integer, ClientConnectionType> lookup = new HashMap();
 
     // Populate the lookup table on loading time

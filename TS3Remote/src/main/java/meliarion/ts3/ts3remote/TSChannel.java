@@ -162,7 +162,7 @@ public class TSChannel implements Comparable<TSChannel>{
     }
     public void updateChannel(TSChannel channel)
     {
-    Log.w("TSChannel","Update channel by TSChannel method received ");
+        Log.e("TSChannel", "Update channel:" + channel.getName() + " by TSChannel method received ");
     }
     public void subscibe(){
         this.subscribed = true;

@@ -45,66 +45,18 @@ public class ServerConnection {
     private Map<Integer, Integer> ChannelGroupMap = new TreeMap<Integer, Integer>();
     private Map<Integer, Integer> ChannelMap = new TreeMap<Integer, Integer>();
     private Map<Integer, List<Integer>> ChannelToClientMap = new TreeMap<Integer, List<Integer>>();
+    private List<ItemNotFoundType> Requests = new ArrayList<ItemNotFoundType>();
 
 
     ServerConnection(int _id){
         this.id = _id;
         initialiseChannels();
     }
-    /*public void setConnectionStage(String _stage){
-        String stuffs ="";
-        if (_stage.equals("connecting"))
-        {
-        ConnectionTested = false;
-            //stage = ConnectionStage.VerifyConnection;
-        }
-        else if (_stage.equals("connected"))
-        {
-        //stage = ConnectionStage.RequestServerGroups;
-        ConnectionTested = true;
-        ConnectionVerified =true;
-        }
-        else if (_stage.equals("connection_establishing"))
-        {
 
-        }
-        else if(_stage.equals("connection_established"))
-        {
-
-        }
-        else if (_stage.equals("disconnected"))
-        {
-        this.Disconnect();
-        }
-    }*/
     private void initialiseChannels(){
         this.ChannelList.add(new TSChannel(0,-1,"Server top level",TSChannel.ChannelType.ServerTopLevel));
         this.ChannelMap.put(0, 0);
     }
-   /* public void advanceConnectionStage(){
-        switch (stage){
-            case VerifyConnection:
-            stage = ConnectionStage.RequestServerGroups;
-            break;
-            case RequestServerGroups:
-            stage = ConnectionStage.RequestChannelGroups;
-            break;
-            case RequestChannelGroups:
-            stage = ConnectionStage.RequestClients;
-            break;
-            case RequestClients:
-            stage = ConnectionStage.RequestChannels;
-            break;
-            case RequestChannels:
-            stage = ConnectionStage.FinaliseSetup;
-            break;
-            case FinaliseSetup:
-            stage = ConnectionStage.PopulatingDone;
-            case PopulatingDone:
-            stage = ConnectionStage.SetupDone;
-            break;
-        }
-    }*/
     public static String makeTransmitSafe (String original)
     {
         Pattern space = Pattern.compile("\\s");
@@ -133,7 +85,7 @@ public class ServerConnection {
         return clientID;
     }
     public ConnectionStage getStage(){
-        boolean b = hasChannels()&&(unprocessedChannels.size()==0)&&(ChannelList.get(0).getSubchannelIDs().size()>0);
+        //boolean b = hasChannels()&&(unprocessedChannels.size()==0)&&(ChannelList.get(0).getSubchannelIDs().size()>0);
         if(ConnectionTested&&!ChannelsReceived&&!ConnectionVerified&&!ClientsReceived &&!hasServerGroups()&&!hasChannelGroups())
         {
             return ConnectionStage.Disconnected;
@@ -160,7 +112,7 @@ public class ServerConnection {
         }
         else if(ConnectionVerified&&hasServerGroups()&&hasChannelGroups()&& ClientsReceived &&ChannelsReceived&&!SetupDone)
         {
-           return ConnectionStage.SetupDone;// return ConnectionStage.FinaliseSetup;
+            return ConnectionStage.SetupDone;
         }
         else if(ConnectionVerified&&hasServerGroups()&&hasChannelGroups()&& ClientsReceived &&ChannelsReceived&&SetupDone)
         {
@@ -233,7 +185,7 @@ public class ServerConnection {
         ConnectionTested = true;
     }
 
-    public void AddTextMessage(String message, int type, String sender, String senderUID, int senderID) throws SCNotFoundException {
+    public void AddTextMessage(String message, int type, String sender, String senderUID, int senderID) {
         switch (type){
             case 0:
             default:
@@ -296,7 +248,7 @@ public class ServerConnection {
     private String makeChatString(ChatMessage message) throws SCNotFoundException {
         Calendar c = Calendar.getInstance();
         SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
-        c.setTimeInMillis(message.getTimestap());
+        c.setTimeInMillis(message.getTimestamp());
         String tmp = "<" + sdf.format(c.getTime()) + ">"; //c.get(Calendar.HOUR_OF_DAY)+":"+c.get(Calendar.MINUTE)+":"+c.get(Calendar.SECOND)+"> ";
         TSClient client = getClientByCLID(message.getSender());
         tmp += '"' + client.getName() + '"';
@@ -345,7 +297,7 @@ public class ServerConnection {
     }
 
     public void AddClient(TSClient client){
-        if (ClientMap.containsKey(client.getClientID()) != true) {
+        if (!ClientMap.containsKey(client.getClientID())) {
             ClientList.add(client);
             ClientMap.put(client.getClientID(), ClientList.size() - 1);
             List<Integer> cList;
@@ -522,11 +474,6 @@ public class ServerConnection {
     }
     public TSClient getClientByCLID(int clientID) throws SCNotFoundException
     {
-        /*for (TSClient client : ClientList) {
-            if (client.getClientID() == clid) {
-                return client;
-            }
-        }*/
         int index;
         if ((ClientMap.containsKey(clientID))&&((index=ClientMap.get(clientID))!=-1)){
         return ClientList.get(index);
@@ -546,13 +493,6 @@ public class ServerConnection {
     {
         throw new SCNotFoundException("ServerGroup id="+ID+" not found", ItemNotFoundType.ServerGroup,ex);
     }
-    /*
-        for (TSGroup group : ServerGroupList) {
-            if (group.getID() == ID) {
-                return group;
-            }
-        }
-        throw new SCNotFoundException("ServerGroup id="+ID+" not found",ItemNotFoundType.ServerGroup);*/
     }
     public TSGroup getChannelGroupByID(int ID) throws SCNotFoundException {
         try {
@@ -567,11 +507,6 @@ public class ServerConnection {
         {
             throw new SCNotFoundException("ChannelGroup id="+ID+" not found", ItemNotFoundType.ChannelGroup, ex);
         }
-        /*for (TSGroup group : ChannelGroupList) {
-            if (group.getID() == ID) {
-                return group;
-            }
-        }*/
 
     }
     public TSChannel getChannelByID(int ID) throws SCNotFoundException {
@@ -586,12 +521,6 @@ public class ServerConnection {
             {
             throw new SCNotFoundException("Channel ID="+ID+" not found", ItemNotFoundType.Channel,ex);
             }
-        /*for (TSChannel channel : ChannelList) {
-            if (channel.getID() == ID) {
-                return channel;
-            }
-        }
-        throw new SCNotFoundException("Channel ID="+ID+" not found",ItemNotFoundType.Channel);*/
     }
     public List<Integer> getClientsByChannelID(int cid){
         return ChannelToClientMap.get(cid);
@@ -616,6 +545,8 @@ public class ServerConnection {
         }
     return null;
     }
+
+    @SuppressWarnings({"redundant", "UnusedAssignment"})
     public void updateServer(Map<String,String> params){
         String value;
         if((value=(parseParams(params,"virtualserver_port")))!=null)
@@ -980,7 +911,27 @@ public class ServerConnection {
         Log.w("ServerConnection","UpdateConnectionInfo response received :"+response);
     }
 
+    public void addRequest(ItemNotFoundType type) {
+        if (!Requests.contains(type)) {
+            Requests.add(type);
+        }
 
+    }
+
+    public List<ItemNotFoundType> getRequests() {
+        if ((Name == null) || (Name.equals("Unknown server"))) {
+            Requests.add(ItemNotFoundType.ServerInfo);
+        }
+        return Requests;
+    }
+
+    public void clearRequests() {
+        Requests.clear();
+    }
+
+    public String getName() {
+        return Name;
+    }
     public static class SCException extends Exception
     { private String errorDescription;
       private SCExceptionType type;
@@ -1030,7 +981,8 @@ public class ServerConnection {
         Client,
         Channel,
         ChannelGroup,
-        ServerGroup
+        ServerGroup,
+        ServerInfo
     }
 
     public enum SCExceptionType {
