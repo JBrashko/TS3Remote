@@ -16,6 +16,7 @@ import java.util.regex.Pattern;
  * Created by Meliarion on 28/07/13.
  * Class that represents a connection to a server
  */
+@SuppressWarnings("UnnecessaryLocalVariable")
 public class ServerConnection {
     private String Name="Unknown server";
     private String OldServerChat = "";
@@ -34,18 +35,18 @@ public class ServerConnection {
     private int port;
     private int iconID;
     private String address;
-    private List<TSClient> ClientList = new ArrayList<TSClient>();
-    private List<TSGroup> ServerGroupList = new ArrayList<TSGroup>();
-    private List<TSGroup> ChannelGroupList = new ArrayList<TSGroup>();
-    private List<TSChannel> ChannelList = new ArrayList<TSChannel>();
+    private final List<TSClient> ClientList = new ArrayList<TSClient>();
+    private final List<TSGroup> ServerGroupList = new ArrayList<TSGroup>();
+    private final List<TSGroup> ChannelGroupList = new ArrayList<TSGroup>();
+    private final List<TSChannel> ChannelList = new ArrayList<TSChannel>();
     //private ConnectionStage stage;
-    private List<Integer> unprocessedChannels = new ArrayList<Integer>();
-    private Map<Integer, Integer> ClientMap = new TreeMap<Integer, Integer>();
-    private Map<Integer, Integer> ServerGroupMap = new TreeMap<Integer, Integer>();
-    private Map<Integer, Integer> ChannelGroupMap = new TreeMap<Integer, Integer>();
-    private Map<Integer, Integer> ChannelMap = new TreeMap<Integer, Integer>();
-    private Map<Integer, List<Integer>> ChannelToClientMap = new TreeMap<Integer, List<Integer>>();
-    private List<ItemNotFoundType> Requests = new ArrayList<ItemNotFoundType>();
+    private final List<Integer> unprocessedChannels = new ArrayList<Integer>();
+    private final Map<Integer, Integer> ClientMap = new TreeMap<Integer, Integer>();
+    private final Map<Integer, Integer> ServerGroupMap = new TreeMap<Integer, Integer>();
+    private final Map<Integer, Integer> ChannelGroupMap = new TreeMap<Integer, Integer>();
+    private final Map<Integer, Integer> ChannelMap = new TreeMap<Integer, Integer>();
+    private final Map<Integer, List<Integer>> ChannelToClientMap = new TreeMap<Integer, List<Integer>>();
+    private final List<ItemNotFoundType> Requests = new ArrayList<ItemNotFoundType>();
 
 
     ServerConnection(int _id){
@@ -444,9 +445,6 @@ public class ServerConnection {
             initialiseChannels();
         }
     }
-    public void ChangeChannelGroup(){
-
-    }
     public void removeClientByCLID(int clid) throws SCNotFoundException {
             TSClient client = getClientByCLID(clid);
             ChannelToClientMap.get(client.getChannelID()).remove(Integer.valueOf(clid));
@@ -565,217 +563,217 @@ public class ServerConnection {
         }
         if((value=(parseParams(params,"virtualserver_welcomemessage")))!=null)
         {
-            String virtualserver_welcomemessage=value;
+            @SuppressWarnings("UnnecessaryLocalVariable") String virtualserver_welcomemessage = value;
 
         }
         if((value=(parseParams(params,"virtualserver_maxclients")))!=null)
         {
-            String virtualserver_maxclients=value;
+            @SuppressWarnings("UnnecessaryLocalVariable") String virtualserver_maxclients = value;
 
         }
         if((value=(parseParams(params,"virtualserver_uptime")))!=null)
         {
-            String virtualserver_uptime=value;
+            @SuppressWarnings("UnnecessaryLocalVariable") String virtualserver_uptime = value;
 
         }
         if((value=(parseParams(params,"virtualserver_hostmessage")))!=null)
         {
-            String virtualserver_hostmessage=value;
+            @SuppressWarnings("UnnecessaryLocalVariable") String virtualserver_hostmessage = value;
 
         }
         if((value=(parseParams(params,"virtualserver_hostmessage_mode")))!=null)
         {
-            String virtualserver_hostmessage_mode=value;
+            @SuppressWarnings("UnnecessaryLocalVariable") String virtualserver_hostmessage_mode = value;
 
         }
         if((value=(parseParams(params,"virtualserver_flag_password")))!=null)
         {
-            String virtualserver_flag_password=value;
+            @SuppressWarnings("UnnecessaryLocalVariable") String virtualserver_flag_password = value;
 
         }
         if((value=(parseParams(params,"virtualserver_default_channel_admin_group")))!=null)
         {
-            String virtualserver_default_channel_admin_group=value;
+            @SuppressWarnings("UnnecessaryLocalVariable") String virtualserver_default_channel_admin_group = value;
 
         }
         if((value=(parseParams(params,"virtualserver_max_download_total_bandwidth")))!=null)
         {
-            String virtualserver_max_download_total_bandwidth=value;
+            @SuppressWarnings("UnnecessaryLocalVariable") String virtualserver_max_download_total_bandwidth = value;
 
         }
         if((value=(parseParams(params,"virtualserver_complain_autoban_count")))!=null)
         {
-            String virtualserver_complain_autoban_count=value;
+            @SuppressWarnings("UnnecessaryLocalVariable") String virtualserver_complain_autoban_count = value;
 
         }
         if((value=(parseParams(params,"virtualserver_complain_autoban_time")))!=null)
         {
-            String virtualserver_complain_autoban_time=value;
+            @SuppressWarnings("UnnecessaryLocalVariable") String virtualserver_complain_autoban_time = value;
 
         }
         if((value=(parseParams(params,"virtualserver_complain_remove_time")))!=null)
         {
-            String virtualserver_complain_remove_time=value;
+            @SuppressWarnings("UnnecessaryLocalVariable") String virtualserver_complain_remove_time = value;
 
         }
         if((value=(parseParams(params,"virtualserver_min_clients_in_channel_before_forced_silence")))!=null)
         {
-            String virtualserver_min_clients_in_channel_before_forced_silence=value;
+            @SuppressWarnings("UnnecessaryLocalVariable") String virtualserver_min_clients_in_channel_before_forced_silence = value;
 
         }
         if((value=(parseParams(params,"virtualserver_antiflood_points_tick_reduce")))!=null)
         {
-            String virtualserver_antiflood_points_tick_reduce=value;
+            @SuppressWarnings("UnnecessaryLocalVariable") String virtualserver_antiflood_points_tick_reduce = value;
 
         }
         if((value=(parseParams(params,"virtualserver_antiflood_points_needed_command_block")))!=null)
         {
-            String virtualserver_antiflood_points_needed_command_block=value;
+            @SuppressWarnings("UnnecessaryLocalVariable") String virtualserver_antiflood_points_needed_command_block = value;
 
         }
         if((value=(parseParams(params,"virtualserver_antiflood_points_needed_ip_block")))!=null)
         {
-            String virtualserver_antiflood_points_needed_ip_block=value;
+            @SuppressWarnings("UnnecessaryLocalVariable") String virtualserver_antiflood_points_needed_ip_block = value;
 
         }
         if((value=(parseParams(params,"virtualserver_client_connections")))!=null)
         {
-            String virtualserver_client_connections=value;
+            @SuppressWarnings("UnnecessaryLocalVariable") String virtualserver_client_connections = value;
 
         }
         if((value=(parseParams(params,"virtualserver_query_client_connections")))!=null)
         {
-            String virtualserver_query_client_connections=value;
+            @SuppressWarnings("UnnecessaryLocalVariable") String virtualserver_query_client_connections = value;
 
         }
         if((value=(parseParams(params,"virtualserver_queryclientsonline")))!=null)
         {
-            String virtualserver_queryclientsonline=value;
+            @SuppressWarnings("UnnecessaryLocalVariable") String virtualserver_queryclientsonline = value;
 
         }
         if((value=(parseParams(params,"virtualserver_download_quota")))!=null)
         {
-            String virtualserver_download_quota=value;
+            @SuppressWarnings("UnnecessaryLocalVariable") String virtualserver_download_quota = value;
 
         }
         if((value=(parseParams(params,"virtualserver_upload_quota")))!=null)
         {
-            String virtualserver_upload_quota=value;
+            @SuppressWarnings("UnnecessaryLocalVariable") String virtualserver_upload_quota = value;
 
         }
         if((value=(parseParams(params,"virtualserver_month_bytes_downloaded")))!=null)
         {
-            String virtualserver_month_bytes_downloaded=value;
+            @SuppressWarnings("UnnecessaryLocalVariable") String virtualserver_month_bytes_downloaded = value;
 
         }
         if((value=(parseParams(params,"virtualserver_month_bytes_uploaded")))!=null)
         {
-            String virtualserver_month_bytes_uploaded=value;
+            @SuppressWarnings("UnnecessaryLocalVariable") String virtualserver_month_bytes_uploaded = value;
 
         }
         if((value=(parseParams(params,"virtualserver_max_upload_total_bandwidth")))!=null)
         {
-            String virtualserver_max_upload_total_bandwidth=value;
+            @SuppressWarnings("UnnecessaryLocalVariable") String virtualserver_max_upload_total_bandwidth = value;
 
         }
         if((value=(parseParams(params,"virtualserver_total_bytes_downloaded")))!=null)
         {
-            String virtualserver_total_bytes_downloaded=value;
+            @SuppressWarnings("UnnecessaryLocalVariable") String virtualserver_total_bytes_downloaded = value;
 
         }
         if((value=(parseParams(params,"virtualserver_total_bytes_uploaded")))!=null)
         {
-            String virtualserver_total_bytes_uploaded=value;
+            @SuppressWarnings("UnnecessaryLocalVariable") String virtualserver_total_bytes_uploaded = value;
 
         }
         if((value=(parseParams(params,"virtualserver_autostart")))!=null)
         {
-            String virtualserver_autostart=value;
+            @SuppressWarnings("UnnecessaryLocalVariable") String virtualserver_autostart = value;
 
         }
         if((value=(parseParams(params,"virtualserver_machine_id")))!=null)
         {
-            String virtualserver_machine_id=value;
+            @SuppressWarnings("UnnecessaryLocalVariable") String virtualserver_machine_id = value;
 
         }
         if((value=(parseParams(params,"virtualserver_needed_identity_security_level")))!=null)
         {
-            String virtualserver_needed_identity_security_level=value;
+            @SuppressWarnings("UnnecessaryLocalVariable") String virtualserver_needed_identity_security_level = value;
 
         }
         if((value=(parseParams(params,"virtualserver_log_client")))!=null)
         {
-            String virtualserver_log_client=value;
+            @SuppressWarnings("UnnecessaryLocalVariable") String virtualserver_log_client = value;
 
         }
         if((value=(parseParams(params,"virtualserver_log_query")))!=null)
         {
-            String virtualserver_log_query=value;
+            @SuppressWarnings("UnnecessaryLocalVariable") String virtualserver_log_query = value;
 
         }
         if((value=(parseParams(params,"virtualserver_log_channel")))!=null)
         {
-            String virtualserver_log_channel=value;
+            @SuppressWarnings("UnnecessaryLocalVariable") String virtualserver_log_channel = value;
 
         }
         if((value=(parseParams(params,"virtualserver_log_permissions")))!=null)
         {
-            String virtualserver_log_permissions=value;
+            @SuppressWarnings("UnnecessaryLocalVariable") String virtualserver_log_permissions = value;
 
         }
         if((value=(parseParams(params,"virtualserver_log_server")))!=null)
         {
-            String virtualserver_log_server=value;
+            @SuppressWarnings("UnnecessaryLocalVariable") String virtualserver_log_server = value;
 
         }
         if((value=(parseParams(params,"virtualserver_log_filetransfer")))!=null)
         {
-            String virtualserver_log_filetransfer=value;
+            @SuppressWarnings("UnnecessaryLocalVariable") String virtualserver_log_filetransfer = value;
 
         }
         if((value=(parseParams(params,"virtualserver_min_client_version")))!=null)
         {
-            String virtualserver_min_client_version=value;
+            @SuppressWarnings("UnnecessaryLocalVariable") String virtualserver_min_client_version = value;
 
         }
         if((value=(parseParams(params,"virtualserver_reserved_slots")))!=null)
         {
-            String virtualserver_reserved_slots=value;
+            @SuppressWarnings("UnnecessaryLocalVariable") String virtualserver_reserved_slots = value;
 
         }
         if((value=(parseParams(params,"virtualserver_antiflood_points_needed_ip_block")))!=null)
         {
-            String virtualserver_antiflood_points_needed_ip_block=value;
+            @SuppressWarnings("UnnecessaryLocalVariable") String virtualserver_antiflood_points_needed_ip_block = value;
 
         }
         if((value=(parseParams(params,"virtualserver_total_packetloss_speech")))!=null)
         {
-            String virtualserver_total_packetloss_speech=value;
+            @SuppressWarnings("UnnecessaryLocalVariable") String virtualserver_total_packetloss_speech = value;
 
         }
         if((value=(parseParams(params,"virtualserver_total_packetloss_keepalive")))!=null)
         {
-            String virtualserver_total_packetloss_keepalive=value;
+            @SuppressWarnings("UnnecessaryLocalVariable") String virtualserver_total_packetloss_keepalive = value;
 
         }
         if((value=(parseParams(params,"virtualserver_total_packetloss_control")))!=null)
         {
-            String virtualserver_total_packetloss_control=value;
+            @SuppressWarnings("UnnecessaryLocalVariable") String virtualserver_total_packetloss_control = value;
 
         }
         if((value=(parseParams(params,"virtualserver_total_packetloss_total")))!=null)
         {
-            String virtualserver_total_packetloss_total=value;
+            @SuppressWarnings("UnnecessaryLocalVariable") String virtualserver_total_packetloss_total = value;
 
         }
         if((value=(parseParams(params,"virtualserver_total_ping")))!=null)
         {
-            String virtualserver_total_ping=value;
+            @SuppressWarnings("UnnecessaryLocalVariable") String virtualserver_total_ping = value;
 
         }
         if((value=(parseParams(params,"virtualserver_weblist_enabled")))!=null)
         {
-            String virtualserver_weblist_enabled=value;
+            @SuppressWarnings("UnnecessaryLocalVariable") String virtualserver_weblist_enabled = value;
 
         }
         if (params.size()>0)
@@ -868,17 +866,17 @@ public class ServerConnection {
         }
         if((value=parseParams(params,"reasonid"))!=null)
         {
-            String reasonid = value;
+            @SuppressWarnings("UnnecessaryLocalVariable") String reasonid = value;
         }
         if((value=parseParams(params,"invokerid"))!=null)
         {
-            String invokerid = value;
+            @SuppressWarnings("UnnecessaryLocalVariable") String invokerid = value;
         }if((value=parseParams(params,"invokername"))!=null)
         {
-            String invokername = value;
+            @SuppressWarnings("UnnecessaryLocalVariable") String invokername = value;
         }if((value=parseParams(params,"invokeruid"))!=null)
         {
-            String invokeruid = value;
+            @SuppressWarnings("UnnecessaryLocalVariable") String invokeruid = value;
         }
         if (params.size()>0)
         {String error = params.size()+" unhandled parameters received  in server edited. ";
@@ -932,9 +930,9 @@ public class ServerConnection {
     public String getName() {
         return Name;
     }
-    public static class SCException extends Exception
-    { private String errorDescription;
-      private SCExceptionType type;
+    public static class SCException extends Exception {
+        private final String errorDescription;
+        private final SCExceptionType type;
         public SCException(String message, SCExceptionType _type){
             super(message);
             this.type = _type;
@@ -953,9 +951,9 @@ public class ServerConnection {
         }
 
     }
-    public static class SCNotFoundException extends SCException
-    {   private String errorDescription;
-        private ItemNotFoundType itemNotFoundType;
+    public static class SCNotFoundException extends SCException {
+        private final String errorDescription;
+        private final ItemNotFoundType itemNotFoundType;
         public SCNotFoundException(String message, ItemNotFoundType _ItemNotFoundType){
             super(message,SCExceptionType.ItemNotFound);
             this.errorDescription = message;

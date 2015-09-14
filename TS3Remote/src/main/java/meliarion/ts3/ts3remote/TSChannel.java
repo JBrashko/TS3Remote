@@ -417,7 +417,7 @@ public class TSChannel implements Comparable<TSChannel>{
         CODEC_SPEEX_ULTRAWIDEBAND (2),
         CODEC_CELT_MONO (3);
 
-        private int id;
+        private final int id;
         CodecType (int _id){
             this.id = _id;
         }

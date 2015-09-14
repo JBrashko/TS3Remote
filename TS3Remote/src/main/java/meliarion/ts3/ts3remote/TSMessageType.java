@@ -29,7 +29,7 @@ public enum TSMessageType {
     ServerAltered(16),
     ClientTalkStatusChanged(17);
 
-    private int Code;
+    private final int Code;
     TSMessageType(int messageCode)
     {
         this.Code = messageCode;

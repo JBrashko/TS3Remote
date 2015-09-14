@@ -9,7 +9,7 @@ import java.util.Comparator;
  * Class which sorts channels into the same order as the teamspeak client
  */
 public class ChannelOrderer implements Comparator<Integer> {
-    private ServerConnection connection;
+    private final ServerConnection connection;
     public ChannelOrderer (ServerConnection _connection)
     {this.connection = _connection;
 

@@ -36,8 +36,4 @@ public enum ClientConnectionType {
         return lookup.get(code);
     }
 
-    @Override
-    public String toString() {
-        return super.toString();
-    }
 }

@@ -32,12 +32,12 @@ public class TS3ClientConnection implements Runnable, ClientConnectionInterface 
 
     final ClientConnectionType connectionType;
     private NetworkInterface networkInterface;
-    private String password;
-    private TrustManagerFactory tmf;
+    private final String password;
+    private final TrustManagerFactory tmf;
     private StringBuilder returnStringBuffer = new StringBuilder();
     private InputStreamReader isr;
     private Writer osw;
-    private String TSClientIP;
+    private final String TSClientIP;
     private final RemoteUserInterface UI;
     private final Handler mHandler;
     private KeepAlive keepAlive;
@@ -49,8 +49,8 @@ public class TS3ClientConnection implements Runnable, ClientConnectionInterface 
     private boolean notifyRegistered = false;
     private static final Pattern response = Pattern.compile("error\\sid=(\\d+)\\smsg=([^$]*)");
     private static final Pattern notify = Pattern.compile("(\\S+)\\sschandlerid=(\\d+)\\s*(.*)");
-    private Map<Integer, Integer> SCIDTOSCIndex = new HashMap<Integer, Integer>();
-    private List<ServerConnection> SCHandlers = new ArrayList<ServerConnection>();
+    private final Map<Integer, Integer> SCIDTOSCIndex = new HashMap<Integer, Integer>();
+    private final List<ServerConnection> SCHandlers = new ArrayList<ServerConnection>();
     private List<String> messageLog = new ArrayList<String>();
 
 
@@ -392,7 +392,7 @@ public class TS3ClientConnection implements Runnable, ClientConnectionInterface 
     }
 
     private boolean parseServerInfo(String info) {
-        //// TODO: 05/09/2015
+        //// TODO: Actualy parse the data
         return true;
     }
 

@@ -57,8 +57,6 @@ public class TSServerView extends View {
             return -1;
         }
     }
-    public void test()
-    {}
     public void setShowCountry(boolean value)
     {
         showCountry=value;
@@ -276,7 +274,7 @@ public class TSServerView extends View {
         }
         catch (Exception e)
         {
-            Log.w("TSView","Error displaying channel map, cid:"+channelID+" error: "+e,e);
+            Log.w("TSView", "Error displaying channel map, cid:" + channelID + " error: " + e, e);
             if (!(channelDisplay.containsKey(channelID))){
                 channelCreated(channelID);
             }
@@ -676,7 +674,8 @@ public class TSServerView extends View {
         Log.d("TSView","Draw finished with result: "+s);
     }
 
-
+    public void test() {
+    }
 
 
     static class TSRow

@@ -30,8 +30,8 @@ public class SecureSocketNetworkInterface implements NetworkInterface {
     private int Port;
     private OutputStream out;
     private InputStream in;
-    private String Password;
-    private TrustManagerFactory tmf;
+    private final String Password;
+    private final TrustManagerFactory tmf;
     private int connectionStage;
     private HandshakeCompletedListener listener;
 

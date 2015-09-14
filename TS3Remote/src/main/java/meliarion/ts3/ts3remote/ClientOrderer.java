@@ -9,7 +9,7 @@ import java.util.Comparator;
  * Class which sorts clients into the same order as the teamspeak client
  */
 public class ClientOrderer implements Comparator<Integer> {
-    private ServerConnection connection;
+    private final ServerConnection connection;
 
     public ClientOrderer(ServerConnection _connection){
         this.connection=_connection;

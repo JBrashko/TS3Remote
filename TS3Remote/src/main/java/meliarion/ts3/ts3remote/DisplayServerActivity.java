@@ -37,7 +37,6 @@ public class DisplayServerActivity extends FragmentActivity implements RemoteUse
     private PersistantFragmentTabHost mTabHost;
     private ClientConnectionInterface networkInterface;
     private Thread networkThread;
-    private int rec = 0;
     private static Handler mHandler;
 
     @Override
@@ -112,17 +111,6 @@ public class DisplayServerActivity extends FragmentActivity implements RemoteUse
         TabHost.TabSpec tabChat = mTabHost.newTabSpec(tag);
         tabChat.setIndicator(label, null);
         mTabHost.addTab(tabChat, ChatFragment.class, bundle);
-    }
-    @Override
-    protected void onStop() {
-        super.onStop();
-
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-
     }
 
     protected void update(String data)

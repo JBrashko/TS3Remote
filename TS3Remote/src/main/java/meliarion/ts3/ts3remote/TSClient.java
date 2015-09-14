@@ -426,7 +426,7 @@ import java.util.regex.Pattern;
         NormalClient (0),
         ServerQueryClient (1);
 
-        private int type;
+        private final int type;
         ClientType(int _type)
         {
             this.type = _type;

@@ -5,7 +5,7 @@ package meliarion.ts3.ts3remote;
  * Exception to handle issues in the Client connection
  */
 public class TSRemoteException extends Exception {
-    String message;
+    final String message;
 
     TSRemoteException(String _message){
         super(_message);

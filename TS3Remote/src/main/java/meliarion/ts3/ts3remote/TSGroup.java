@@ -93,7 +93,7 @@ public class TSGroup {
         ServerGroup(1),
         ServerQueryGroup(2);
 
-        private int i;
+        private final int i;
 
         GroupType(int _i){
             this.i = _i;
