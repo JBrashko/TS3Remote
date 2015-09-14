@@ -19,8 +19,15 @@ import android.widget.EditText;
 import android.widget.TabHost;
 import android.widget.TextView;
 
+import java.io.BufferedInputStream;
+import java.io.InputStream;
+import java.security.KeyStore;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateFactory;
 import java.util.HashMap;
 import java.util.List;
+
+import javax.net.ssl.TrustManagerFactory;
 
 /**
  * Created by Meliarion on 05/06/13.
@@ -48,7 +55,8 @@ public class DisplayServerActivity extends FragmentActivity implements RemoteUse
         NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
         if (networkInfo != null && networkInfo.isConnected())
         { try{
-            TS3ClientConnection connection = new TS3ClientConnection(client_ip, this,type);
+            ConnectionInfo ConnectionInfo = new ConnectionInfo(client_ip, "", createTrustManager(), type);
+            TS3ClientConnection connection = new TS3ClientConnection(this, ConnectionInfo);
             networkThread = new Thread(connection);
             networkThread.setName("Network Thread");
             networkThread.start();
@@ -68,6 +76,26 @@ public class DisplayServerActivity extends FragmentActivity implements RemoteUse
         addChatTab("channelChat", "Channel Chat");
     }
 
+    private TrustManagerFactory createTrustManager() {
+        try {
+            CertificateFactory cf = CertificateFactory.getInstance("X.509");
+            InputStream caInput = new BufferedInputStream(getAssets().open("CARoot.cer"));
+            Certificate ca;
+            ca = cf.generateCertificate(caInput);
+            caInput.close();
+            String keyStoreType = KeyStore.getDefaultType();
+            KeyStore keyStore = KeyStore.getInstance(keyStoreType);
+            keyStore.load(null, null);
+            keyStore.setCertificateEntry("ca", ca);
+            String tmfAlgorithm = TrustManagerFactory.getDefaultAlgorithm();
+            TrustManagerFactory tmf = TrustManagerFactory.getInstance(tmfAlgorithm);
+            tmf.init(keyStore);
+            return tmf;
+        } catch (Exception ex) {
+            Log.e("DisplayServerActivity", "Error making truststore", ex);
+            return null;
+        }
+    }
     private void addChatTab(String tag, String label) {
         mTabHost = (PersistantFragmentTabHost) findViewById(R.id.fragChatTabHost);
         mTabHost.setup(this, getSupportFragmentManager(), android.R.id.tabcontent);

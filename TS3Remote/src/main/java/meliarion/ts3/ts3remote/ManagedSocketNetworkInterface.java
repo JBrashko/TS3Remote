@@ -31,4 +31,9 @@ public class ManagedSocketNetworkInterface extends SocketNetworkInterface  imple
     public String getConnectionString() {
         return "Managed connection to " + this.getIP() + ":" + this.getPort();
     }
+
+    @Override
+    public String toString() {
+        return getConnectionString();
+    }
 }

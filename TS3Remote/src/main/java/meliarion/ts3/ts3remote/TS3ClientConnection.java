@@ -22,6 +22,8 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.net.ssl.TrustManagerFactory;
+
 /**
  * Created by Meliarion on 01/07/13.
  * Class handling the connection to the teamspeak client
@@ -30,6 +32,8 @@ public class TS3ClientConnection implements Runnable, ClientConnectionInterface 
 
     final ClientConnectionType connectionType;
     private NetworkInterface networkInterface;
+    private String password;
+    private TrustManagerFactory tmf;
     private StringBuilder returnStringBuffer = new StringBuilder();
     private InputStreamReader isr;
     private Writer osw;
@@ -50,12 +54,14 @@ public class TS3ClientConnection implements Runnable, ClientConnectionInterface 
     private List<String> messageLog = new ArrayList<String>();
 
 
-    public TS3ClientConnection(String _ip, RemoteUserInterface _ui, ClientConnectionType _type) {
-        this.TSClientIP = _ip;
+    public TS3ClientConnection(RemoteUserInterface _ui, ConnectionInfo connectionInfo) {
+
+        this.TSClientIP = connectionInfo.getIP();
         this.UI = _ui;
         this.mHandler = _ui.getHandler();
-        this.connectionType = _type;
-
+        this.connectionType = connectionInfo.getType();
+        this.password = connectionInfo.getPassword();
+        this.tmf = connectionInfo.getTrustManagerFactory();
     }
 
     public boolean usingNetwork() {
@@ -79,10 +85,10 @@ public class TS3ClientConnection implements Runnable, ClientConnectionInterface 
                     networkInterface = new SocketNetworkInterface(TSClientIP);
                     break;
                 case ManagedNetwork:
-                    networkInterface = new ManagedSocketNetworkInterface(TSClientIP, "");
+                    networkInterface = new ManagedSocketNetworkInterface(TSClientIP, password);
                     break;
                 case SecureNetwork:
-                    networkInterface = new SecureSocketNetworkInterface(TSClientIP, "");
+                    networkInterface = new SecureSocketNetworkInterface(TSClientIP, password, tmf);
                     break;
                 case USBADB:
                     networkInterface = new USBADBNetworkInterface();
